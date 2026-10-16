@@ -142,22 +142,30 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
   };
 })();
 
-/* Fotos ILUSTRATIVAS para a demonstração (banco de imagens livre randomuser.me).
-   Não são os corretores. Na versão final, troque por FOTOS reais do Vista embutidas na página. */
+/* Fotos ILUSTRATIVAS para a demonstração: rostos gerados por IA (StyleGAN, thispersondoesnotexist.com),
+   publicados pelo projeto acadêmico Which Face Is Real (whichfaceisreal.com). São pessoas que não existem.
+   Na versão final, troque pelas fotos reais do Vista embutidas na página. */
 (function () {
-  var W = 'https://randomuser.me/api/portraits/women/', M = 'https://randomuser.me/api/portraits/men/';
-  window.__poloFotos = {
-    'Maya': W + '44.jpg', 'Paloma Piteri': W + '68.jpg', 'Daniela Simões': W + '65.jpg', 'Paloma Moura': W + '79.jpg',
-    'Viviane': W + '50.jpg', 'Cátia': W + '90.jpg', 'Lilian': W + '33.jpg', 'Natália': W + '21.jpg', 'Tayse Barros': W + '12.jpg',
-    'Thaina': W + '57.jpg', 'Vanessa': W + '26.jpg', 'Priscila': W + '72.jpg',
-    'Igor': M + '32.jpg', 'Eduardo': M + '46.jpg', 'Arthur': M + '75.jpg', 'Erick': M + '22.jpg', 'Mitsu': M + '86.jpg',
-    'Montero': M + '64.jpg', 'Gustavo': M + '52.jpg', 'Matheus': M + '11.jpg'
+  var B = 'https://whichfaceisreal.blob.core.windows.net/public/fakeimages/';
+  var F = {
+    'Maya': 'image-2019-02-17_040334.jpeg', 'Paloma Piteri': 'image-2019-02-19_020706.jpeg',
+    'Daniela Simões': 'image-2019-02-17_034042.jpeg', 'Paloma Moura': 'image-2019-02-17_054348.jpeg',
+    'Viviane': 'image-2019-02-17_033302.jpeg', 'Cátia': 'image-2019-02-17_201227.jpeg',
+    'Lilian': 'image-2019-02-18_202522.jpeg', 'Natália': 'image-2019-02-18_003738.jpeg',
+    'Tayse Barros': 'image-2019-02-18_124111.jpeg', 'Thaina': 'image-2019-02-18_234427.jpeg',
+    'Vanessa': 'image-2019-02-18_072307.jpeg', 'Priscila': 'image-2019-02-19_043547.jpeg',
+    'Igor': 'image-2019-02-18_052652.jpeg', 'Eduardo': 'image-2019-02-18_201506.jpeg',
+    'Arthur': 'image-2019-02-18_170842.jpeg', 'Erick': 'image-2019-02-18_043012.jpeg',
+    'Mitsu': 'image-2019-02-18_090318.jpeg', 'Montero': 'image-2019-02-17_151148.jpeg',
+    'Gustavo': 'image-2019-02-17_065455.jpeg', 'Matheus': 'image-2019-02-19_033458.jpeg'
   };
+  window.__poloFotos = {};
+  Object.keys(F).forEach(function (k) { window.__poloFotos[k] = B + F[k]; });
   var nm = document.getElementById('optname');
   if (nm && nm.parentNode) {
     var tag = document.createElement('span');
-    tag.textContent = 'Fotos ilustrativas';
-    tag.style.cssText = 'padding:6px 10px;border-radius:999px;border:1px solid #3a3a3d;font:600 12px/1 Manrope,sans-serif;color:#d4b46a;letter-spacing:.06em;white-space:nowrap';
+    tag.textContent = 'Fotos ilustrativas · rostos gerados por IA';
+    tag.style.cssText = 'padding:6px 10px;border-radius:999px;border:1px solid #3a3a3d;font:600 12px/1 Manrope,sans-serif;color:#d4b46a;letter-spacing:.04em;white-space:nowrap';
     nm.parentNode.insertBefore(tag, nm.nextSibling);
   }
 })();
