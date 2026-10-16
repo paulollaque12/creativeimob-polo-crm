@@ -28,6 +28,8 @@ tv_sql = (R / 'sql/ranking-tv.sql').read_text()
 
 # Versão estática: documento completo + leitor do arquivo cifrado antes dos scripts da página
 estatico = (R / 'fonte/estatico.js').read_text()
+# Demonstração: fotos ilustrativas (remover esta linha quando houver as fotos reais)
+estatico += '\n' + (R / 'fonte/fotos-exemplo.js').read_text()
 corpo = juntar(tv_ui, tv_sql)
 marca = '<script>\n'
 i = corpo.index(marca)

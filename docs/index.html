@@ -56,8 +56,8 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 .mono i.r{background:#b0121c}
 .mono b{position:absolute;background:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--sora);font-weight:600;color:#151515}
 .mono b span{color:#b0121c}
-.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--sora);font-weight:500;overflow:hidden;flex:none}
-.av img{width:100%;height:100%;object-fit:cover;display:block}
+.av{position:relative;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--sora);font-weight:500;overflow:hidden;flex:none}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .av.d{background:linear-gradient(160deg,#2b2b2e,#161618);color:#77736e;box-shadow:inset 0 0 0 1px #2e2e31}
 .av.l{background:linear-gradient(160deg,#e4e1dc,#cfcbc5);color:#8d8984}
 .mv{display:inline-flex;align-items:center;gap:6px;border-radius:999px;font-family:var(--man);font-weight:700;white-space:nowrap}
@@ -140,6 +140,26 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
     if (s) { try { return await decifrar(pkg, s); } catch (e) { esquecer(); } }
     return pedirSenha(pkg, false);
   };
+})();
+
+/* Fotos ILUSTRATIVAS para a demonstração (banco de imagens livre randomuser.me).
+   Não são os corretores. Na versão final, troque por FOTOS reais do Vista embutidas na página. */
+(function () {
+  var W = 'https://randomuser.me/api/portraits/women/', M = 'https://randomuser.me/api/portraits/men/';
+  window.__poloFotos = {
+    'Maya': W + '44.jpg', 'Paloma Piteri': W + '68.jpg', 'Daniela Simões': W + '65.jpg', 'Paloma Moura': W + '79.jpg',
+    'Viviane': W + '50.jpg', 'Cátia': W + '90.jpg', 'Lilian': W + '33.jpg', 'Natália': W + '21.jpg', 'Tayse Barros': W + '12.jpg',
+    'Thaina': W + '57.jpg', 'Vanessa': W + '26.jpg', 'Priscila': W + '72.jpg',
+    'Igor': M + '32.jpg', 'Eduardo': M + '46.jpg', 'Arthur': M + '75.jpg', 'Erick': M + '22.jpg', 'Mitsu': M + '86.jpg',
+    'Montero': M + '64.jpg', 'Gustavo': M + '52.jpg', 'Matheus': M + '11.jpg'
+  };
+  var nm = document.getElementById('optname');
+  if (nm && nm.parentNode) {
+    var tag = document.createElement('span');
+    tag.textContent = 'Fotos ilustrativas';
+    tag.style.cssText = 'padding:6px 10px;border-radius:999px;border:1px solid #3a3a3d;font:600 12px/1 Manrope,sans-serif;color:#d4b46a;letter-spacing:.06em;white-space:nowrap';
+    nm.parentNode.insertBefore(tag, nm.nextSibling);
+  }
 })();
 
 </script>
@@ -290,7 +310,7 @@ if (typeof module !== 'undefined') module.exports = { parseCubo: parseCubo, funi
 var SQL = "/*polo-tv v2*/\nWITH\np AS (SELECT DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) L),\nper AS (\n  SELECT 'ano' k, DATE_TRUNC(L, YEAR) a, L b FROM p UNION ALL\n  SELECT 'mes', DATE_TRUNC(L, MONTH), L FROM p UNION ALL\n  SELECT 'mes_ant', DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 MONTH),\n    LEAST(DATE_ADD(DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 MONTH), INTERVAL DATE_DIFF(L, DATE_TRUNC(L, MONTH), DAY) DAY), DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 DAY)) FROM p UNION ALL\n  SELECT 'sem', DATE_TRUNC(L, WEEK(MONDAY)), L FROM p UNION ALL\n  SELECT 'sem_ant', DATE_SUB(DATE_TRUNC(L, WEEK(MONDAY)), INTERVAL 7 DAY), DATE_SUB(L, INTERVAL 7 DAY) FROM p\n),\nlim AS (SELECT MIN(a) a0, MAX(b) b0 FROM per),\ng AS (\n  SELECT CodigoNegocio x, MIN(Data) d, ANY_VALUE(CodigoEmImovel) imo, MAX(valornegocio_dn) val, ARRAY_AGG(DISTINCT IFNULL(nome_usuario, '')) cors\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim\n  WHERE Assunto = 'Negócio ganho' AND Data BETWEEN DATE_SUB(a0, INTERVAL 40 DAY) AND b0\n  GROUP BY 1\n),\nu AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),\nev AS (\n  SELECT 'leads' m, DATE(c.Data) d, c.nome_usuario cor, c.CodigoCliente x, CAST(NULL AS STRING) imo, CAST(NULL AS FLOAT64) val\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_clientes_capturados_polo` c, lim\n  WHERE DATE(c.Data) BETWEEN a0 AND b0\n  UNION ALL\n  SELECT CASE WHEN EtapaAcaoId IN ('13','16') THEN 'atd' WHEN EtapaAcaoId = '14' THEN 'agd' ELSE 'vis' END, Data, nome_usuario, CodigoCliente, NULL, NULL\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim\n  WHERE Data BETWEEN a0 AND b0 AND EtapaAcaoId IN ('13','16','14','2')\n    AND (Assunto IS NULL OR Assunto NOT IN ('Negócio ganho','Negócio perdido'))\n  UNION ALL\n  SELECT 'vend', d, NULLIF(c, ''), x, imo, CAST(val AS FLOAT64) FROM g, UNNEST(cors) c, lim WHERE d BETWEEN a0 AND b0\n  UNION ALL\n  SELECT 'agc', DATE(i.data_cadastro), u.nome, i.codigo, NULL, NULL\n  FROM `vistaprocessos.nitro_dados.vista_imoveis` i LEFT JOIN u ON u.codigo = i.codigo_corretor, lim\n  WHERE i.imobiliaria_id = 1005 AND DATE(i.data_cadastro) BETWEEN a0 AND b0\n),\nj AS (\n  SELECT per.k, ev.m, ev.cor, ev.x, ev.imo, ev.val FROM per JOIN ev ON ev.d BETWEEN per.a AND per.b WHERE ev.cor IS NOT NULL\n  UNION ALL\n  SELECT per.k, ev.m, '*', ev.x, ev.imo, ev.val FROM per JOIN ev ON ev.d BETWEEN per.a AND per.b\n),\ncnt AS (SELECT k, m, cor, COUNT(DISTINCT x) n FROM j GROUP BY 1, 2, 3),\nvg AS (\n  SELECT k, 'vgv' m, cor, SUM(mx) v FROM (\n    SELECT k, cor, COALESCE(imo, CONCAT('n', x)) ik, MAX(val) mx FROM j WHERE m = 'vend' GROUP BY 1, 2, 3\n  ) GROUP BY 1, 2, 3\n),\nlin AS (\n  SELECT k, m, CONCAT(cor, '|', CAST(n AS STRING)) t FROM cnt\n  UNION ALL\n  SELECT k, m, CONCAT(cor, '|', CAST(CAST(ROUND(v) AS INT64) AS STRING)) FROM vg\n)\nSELECT k, m, STRING_AGG(t, ';' ORDER BY t) s FROM lin GROUP BY 1, 2\nUNION ALL\nSELECT k, '_per', CONCAT(CAST(a AS STRING), '|', CAST(b AS STRING)) FROM per\n";
 var SRV = "Google Cloud BigQuery";
 // Fotos dos corretores: nome exatamente como no Vista -> imagem embutida (data URI). Vazio = moldura com iniciais.
-var FOTOS = {};
+var FOTOS = window.__poloFotos || {};
 var NOMES_OPC = { 1: 'Pódio', 2: 'Placar', 3: 'Torre', 4: 'Destaque' };
 var MT = [
   { k: 'leads', m: 0, n: 'Leads', t: 'Leads captados', un: ['lead', 'leads'] },
@@ -359,7 +379,7 @@ function cup(size, cor) { return '<svg class="cup" width="' + size + '" height="
 var CUP_D = ['var(--gold)', 'var(--silver)', 'var(--bronze)'], CUP_L = ['var(--gold-l)', 'var(--silver-l)', 'var(--bronze-l)'];
 function avatar(it, px, tone, fs, extra) {
   var f = FOTOS[it.nome];
-  return '<div class="av ' + tone + '" style="width:' + px + 'px;height:' + px + 'px;font-size:' + fs + 'px;' + (extra || '') + '">' + (f ? '<img src="' + f + '" alt="">' : esc(it.ini)) + '</div>';
+  return '<div class="av ' + tone + '" style="width:' + px + 'px;height:' + px + 'px;font-size:' + fs + 'px;' + (extra || '') + '">' + esc(it.ini) + (f ? '<img src="' + f + '" alt="" onerror="this.remove()">' : '') + '</div>';
 }
 function chip(it, fs, pad) {
   if (!it.comp) return '';
@@ -423,7 +443,7 @@ function op2(D) {
     var sub = x.comp ? '<span style="display:flex;align-items:center;gap:8px;font:600 17px/1 var(--man);color:' + mvCor + '">' + icone + mvTxt + '</span>' : '<span style="font:600 17px/1 var(--man);color:#8d8984">' + pct(x.share) + ' do total da Polo</span>';
     return '<div style="display:grid;grid-template-columns:96px 96px minmax(0,1fr) auto;align-items:center;gap:0 28px;height:128px;border-bottom:1px solid #dfdcd7;position:relative">' +
       '<span class="num" style="font:300 76px/1 var(--sora);letter-spacing:-.04em;color:' + (x.pos === 1 ? '#ad111b' : '#151515') + '">' + x.pos + '</span>' +
-      (FOTOS[x.nome] ? '<div class="av l" style="width:96px;height:96px;border-radius:14px"><img src="' + FOTOS[x.nome] + '" alt=""></div>' : '<div class="av l" style="width:96px;height:96px;border-radius:14px;font-size:30px">' + esc(x.ini) + '</div>') +
+      '<div class="av l" style="width:96px;height:96px;border-radius:14px;font-size:30px">' + esc(x.ini) + (FOTOS[x.nome] ? '<img src="' + FOTOS[x.nome] + '" alt="" onerror="this.remove()">' : '') + '</div>' +
       '<div style="display:flex;flex-direction:column;gap:10px;min-width:0"><span style="display:flex;align-items:center;gap:12px;min-width:0"><span class="ell" style="font:600 32px/1.05 var(--sora);letter-spacing:-.01em">' + esc(x.nome) + '</span>' + (x.pos <= 3 ? cup(26, CUP_L[x.pos - 1]) : '') + '</span>' + sub + '</div>' +
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span class="num" style="font:600 58px/1 var(--sora);letter-spacing:-.03em">' + (mt.vgv ? '<span style="font-size:26px;color:#8d8984;letter-spacing:0">R$ </span>' : '') + fv(mt, x.v) + (mt.vgv ? '<span style="font-size:26px;color:#8d8984;letter-spacing:0"> Mi</span>' : '') + '</span>' +
         (x.comp ? '<span class="num" style="font:600 16px/1 var(--man);color:#8d8984">' + fdif(mt, x.dif) + ' vs. ' + esc(P.ant) + '</span>' : '') + '</div>' +
@@ -500,7 +520,7 @@ function op4(D) {
   if (L) {
     var sub = mt.vgv ? L.n + (L.n === 1 ? ' venda' : ' vendas') + ' · ticket médio R$ ' + (L.v / L.n / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Mi'
       : L.comp ? fdif(mt, L.dif) + ' vs. ' + (S.p === 'mes' ? 'mês anterior' : 'semana anterior') : pct(L.share) + ' do total da Polo';
-    var fotoGrande = FOTOS[L.nome] ? '<img src="' + FOTOS[L.nome] + '" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">' : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 150px/1 var(--sora);color:#3e3e42;letter-spacing:-.03em">' + esc(L.ini) + '</div>';
+    var fotoGrande = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 150px/1 var(--sora);color:#3e3e42;letter-spacing:-.03em">' + esc(L.ini) + '</div>' + (FOTOS[L.nome] ? '<img src="' + FOTOS[L.nome] + '" alt="" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">' : '');
     esq = '<div style="margin-top:48px;position:relative;width:576px;height:500px;border-radius:24px;overflow:hidden;background:linear-gradient(165deg,#2c2c2f 0%,#1a1a1c 100%)">' + fotoGrande +
       '<div style="position:absolute;left:0;right:0;bottom:0;height:220px;background:linear-gradient(180deg,rgba(12,12,13,0) 0%,rgba(12,12,13,.92) 100%)"></div>' +
       '<div style="position:absolute;left:28px;top:28px;display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:999px;background:var(--red);font:700 15px/1 var(--man);letter-spacing:.16em;color:#fff">1º LUGAR · ' + esc(mt.n.toUpperCase()) + ' ' + esc(S.p === 'ano' ? P.titulo : S.p === 'mes' ? 'DO MÊS' : 'DA SEMANA') + '</div>' +
@@ -534,7 +554,7 @@ function op4(D) {
         '<h1 style="margin:0;font:600 52px/1 var(--sora);letter-spacing:-.03em;white-space:nowrap">Top Corretores</h1>' +
         '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px">' +
           '<div role="group" aria-label="Período" style="display:flex;padding:4px;background:#e9e7e3;border-radius:12px">' + selPer(function (p, on) { return '<button class="pill" data-p="' + p.k + '" aria-pressed="' + on + '" style="padding:11px 20px;border-radius:9px;font:600 16px/1 var(--man);' + (on ? 'background:#151515;color:#fff' : 'color:#5e5b57') + '">' + p.n + '</button>'; }) + '</div>' +
-          '<div role="group" aria-label="Métrica" style="display:flex;gap:6px">' + selMet(function (m, on) { return '<button class="pill" data-mt="' + m.k + '" aria-pressed="' + on + '" style="padding:9px 14px;border-radius:999px;font:600 15px/1 var(--man);' + (on ? 'background:#ad111b;color:#fff' : 'box-shadow:inset 0 0 0 1px #dcd9d4;color:#5e5b57') + '">' + m.n + '</button>'; }) + '</div>' +
+          '<div role="group" aria-label="Métrica" style="display:flex;gap:5px">' + selMet(function (m, on) { return '<button class="pill" data-mt="' + m.k + '" aria-pressed="' + on + '" style="padding:8px 11px;border-radius:999px;font:600 14px/1 var(--man);' + (on ? 'background:#ad111b;color:#fff' : 'box-shadow:inset 0 0 0 1px #dcd9d4;color:#5e5b57') + '">' + m.n + '</button>'; }) + '</div>' +
         '</div></header>' +
       '<p style="margin:-12px 0 0;font:500 19px/1.3 var(--man);color:#5e5b57">' + esc(mt.t) + ' · ' + esc(P.titulo) + ' · ' + esc(P.faixa) + '</p>' +
       (it.length > 1 ? '<div style="display:grid;grid-template-columns:' + cols + ';gap:0 22px;padding-bottom:12px;border-bottom:2px solid #151515;font:600 13px/1 var(--man);letter-spacing:.16em;color:#8d8984"><span>POS.</span><span></span><span>CORRETOR</span><span>PARTICIPAÇÃO</span><span style="text-align:right">' + extraCab + '</span><span style="text-align:right">' + (mt.vgv ? 'VGV (MI)' : mt.n.toUpperCase()) + '</span></div>' +
