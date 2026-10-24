@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24a site estático com senha + vendas via API -->
+<!-- v2026-10-24b dados desde 2026 + tela de senha nova -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -331,7 +331,7 @@ function marcaPreset() {
 function iniciarFiltros() {
   setPeriodo(padrao());
   var max = dIso(hojeIdx());
-  $('#d1').max = $('#d2').max = max; $('#d1').min = $('#d2').min = '2025-01-01';
+  $('#d1').max = $('#d2').max = max; $('#d1').min = $('#d2').min = '2026-01-01';
   ['#d1', '#d2'].forEach(function (s) { $(s).onchange = function () { if (!$('#d1').value || !$('#d2').value) return; var a = dIdx($('#d1').value), b = dIdx($('#d2').value); if (b < a) { var t = a; a = b; b = t; } setPeriodo([a, b]); render(); }; });
   document.querySelectorAll('#presets .pill').forEach(function (b) { b.onclick = function () { setPeriodo(preset(b.dataset.pr)); render(); }; });
   // corretores com algum registro, em ordem alfabética
@@ -345,7 +345,7 @@ function iniciarFiltros() {
   $('#fvei').onchange = function () { FX.vei = this.value; render(); };
   // meses para a Performance
   var meses = [], o = dObj(hojeIdx() - 1), y = o.getUTCFullYear(), m = o.getUTCMonth() + 1;
-  while (y > 2025 || (y === 2025 && m >= 1)) { meses.push(y + '-' + String(m).padStart(2, '0')); m--; if (!m) { m = 12; y--; } }
+  while (y > 2026 || (y === 2026 && m >= 1)) { meses.push(y + '-' + String(m).padStart(2, '0')); m--; if (!m) { m = 12; y--; } }
   FX.mes = meses[0];
   var nomes = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   $('#mes').innerHTML = meses.map(function (k) { var p = k.split('-'); return '<option value="' + k + '">' + nomes[+p[1] - 1] + '/' + p[0] + '</option>'; }).join('');
@@ -600,8 +600,8 @@ function rCp(v) {
   var max = 0; FUNIL.forEach(function (m) { max = Math.max(max, oa[m], ob[m]); });
   function painel(id, P, nome) {
     return '<div class="cmp-p"><div class="tag">' + nome + '<em>' + (P.d2 - P.d1 + 1) + ' dias</em></div>' +
-      '<label class="fld"><span>De</span><input class="ctl" type="date" id="' + id + '1" value="' + dIso(P.d1) + '" min="2025-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
-      '<label class="fld"><span>Até</span><input class="ctl" type="date" id="' + id + '2" value="' + dIso(P.d2) + '" min="2025-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
+      '<label class="fld"><span>De</span><input class="ctl" type="date" id="' + id + '1" value="' + dIso(P.d1) + '" min="2026-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
+      '<label class="fld"><span>Até</span><input class="ctl" type="date" id="' + id + '2" value="' + dIso(P.d2) + '" min="2026-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
       '<label class="fld"><span>Corretor</span><select class="ctl" id="' + id + 'c">' + $('#fcor').innerHTML.replace('value="' + P.cor + '"', 'value="' + P.cor + '" selected') + '</select></label></div>';
   }
   var s = '<section class="card"><div class="cmp-head">' + painel('ca', A, 'Período A') + '<div></div>' + painel('cb', B, 'Período B') + '</div>';
@@ -612,10 +612,10 @@ function rCp(v) {
     }
     var wa = max ? Math.max(oa[m] / max * 100, oa[m] ? 1.2 : 0) : 0, wb = max ? Math.max(ob[m] / max * 100, ob[m] ? 1.2 : 0) : 0, sale = m === 7 ? ' sale' : '';
     s += '<div class="crow' + sale + '"><div class="cside l frow' + sale + '" style="height:auto"><div class="fval">' + fmt.n(oa[m]) + '</div><div class="ftrack"><div class="fbar" style="width:' + wa + '%"></div></div></div>' +
-      '<div class="cmid' + sale + '"><span class="nm">' + MET[m].n + '</span>' + chg(ob[m], oa[m], 0) + '</div>' +
+      '<div class="cmid' + sale + '"><span class="nm">' + MET[m].n + '</span>' + chg(ob[m], oa[m], A.d1) + '</div>' +
       '<div class="cside r frow' + sale + '" style="height:auto"><div class="ftrack"><div class="fbar" style="width:' + wb + '%"></div></div><div class="fval">' + fmt.n(ob[m]) + '</div></div></div>';
   });
-  s += '<div class="cvgv"><span>VGV <b>' + fmt.mi(oa.vgv) + '</b></span><span style="text-align:center">' + chg(ob.vgv, oa.vgv, 0) + '</span><span>VGV <b>' + fmt.mi(ob.vgv) + '</b></span></div>';
+  s += '<div class="cvgv"><span>VGV <b>' + fmt.mi(oa.vgv) + '</b></span><span style="text-align:center">' + chg(ob.vgv, oa.vgv, A.d1) + '</span><span>VGV <b>' + fmt.mi(ob.vgv) + '</b></span></div>';
   s += '<p class="note" style="text-align:center;margin-top:18px">A variação no centro mostra B em relação a A. O filtro de veículo do topo vale para os dois lados.</p></section>';
   v.innerHTML = s;
   ['ca', 'cb'].forEach(function (id) {
@@ -719,6 +719,7 @@ async function carregar(forcar) {
     try {
       var res = await window.__poloFonte(forcar);
       if (!res) return;
+      var portao = document.getElementById('portao'); if (portao) portao.remove();
       $('#filters').style.visibility = $('#presets').style.visibility = '';
       aplicar({ rows: res.rows.map(function (r) { return { f: r.map(function (v) { return { v: v }; }) }; }) }, null);
       if (res.gerado) $('#stamp').textContent = 'Dados até ' + fmt.data(hojeIdx() - 1) + ' · gerados em ' + new Date(res.gerado).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });

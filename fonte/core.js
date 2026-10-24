@@ -18,6 +18,7 @@ var FUNIL = [0, 1, 2, 3, 4, 5, 6, 7];
 function dIdx(iso) { var p = iso.split('-'); return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - E0) / DAY); }
 function dIso(i) { return new Date(E0 + i * DAY).toISOString().slice(0, 10); }
 function dObj(i) { return new Date(E0 + i * DAY); }
+var INICIO = dIdx('2026-01-01');          // primeiro dia com dados no cubo
 
 // Converte o resultado da consulta (linhas k, n, s) no cubo em memória
 function parseCubo(rows) {
@@ -98,7 +99,7 @@ function funil(C, d1, d2, F) {
 // Período anterior: os N dias imediatamente antes
 function anterior(d1, d2) { var n = d2 - d1 + 1; return [d1 - n, d1 - 1]; }
 function variacao(a, b, d1prev) {
-  if (d1prev < 0 || !b) return null;
+  if (d1prev < INICIO || !b) return null;   // período anterior antes do início dos dados = sem base
   return (a - b) / b;
 }
 // Agrupa uma métrica por dimensão: [{nome, n, vend, vgv}]

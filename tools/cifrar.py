@@ -1,7 +1,7 @@
 """Cifra o resultado de uma consulta para o site.
 
-  DASH_SENHA='...' python3 tools/cifrar.py resultado.json              # ranking da TV  -> docs/data.enc.json
-  DASH_SENHA='...' python3 tools/cifrar.py --painel resultado.json     # Dashboard Polo -> docs/painel/data.enc.json
+  DASH_SENHA='...' python3 tools/cifrar.py --painel resultado.json     # Dashboard Polo -> docs/data.enc.json (site publicado)
+  DASH_SENHA='...' python3 tools/cifrar.py resultado.json              # ranking da TV  -> ranking/data.enc.json (fora do site)
 
 `resultado.json` pode ser o retorno do conector do BigQuery ({"rows":[{"f":[{"v":..}]}]})
 ou uma lista simples [[...], ...]. Ranking: sql/ranking-tv.sql. Painel: sql/painel-cubo.sql.
@@ -39,14 +39,14 @@ if painel:
     assert not faltam, 'faltam linhas do cubo: %s (a consulta é a sql/painel-cubo.sql?)' % sorted(faltam)
     ultimo = chaves['ref'][2]
     resumo = ' · '.join('%s=%s' % (k, chaves[k][1]) for k in sorted(chaves) if k.startswith('m'))
-    destino = R / 'docs/painel/data.enc.json'
+    destino = R / 'docs/data.enc.json'
 else:
     periodos = {r[0]: r[2] for r in rows if r[1] == '_per'}
     assert {'ano', 'mes', 'mes_ant', 'sem', 'sem_ant'} <= set(periodos), 'faltam os períodos: a consulta é a sql/ranking-tv.sql?'
     assert any(r[1] != '_per' for r in rows), 'consulta sem nenhuma métrica'
     ultimo = periodos['ano'].split('|')[1]
     resumo = '%d linhas' % len(rows)
-    destino = R / 'docs/data.enc.json'
+    destino = R / 'ranking/data.enc.json'
 
 dados = {'gerado': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'), 'rows': rows}
 claro = json.dumps(dados, ensure_ascii=False, separators=(',', ':')).encode()
