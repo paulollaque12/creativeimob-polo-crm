@@ -1,9 +1,9 @@
-/*polo-cubo v3 · desde 2026-01-01*/
+/*polo-cubo v4 · de 2026-01-01 até D-1*/
 WITH
 d0 AS (
   SELECT Data, CodigoCliente, EtapaAcaoId, nome_usuario, veiculocaptacao_dn, bairro_imovel, categoria_imovel, dormitorios_imovel, areaprivativa_imovel
   FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`
-  WHERE Data BETWEEN '2026-01-01' AND CURRENT_DATE()
+  WHERE Data BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)
     AND (Assunto IS NULL OR Assunto NOT IN ('Negócio ganho','Negócio perdido'))
     AND EtapaAcaoId IN ('9','17','13','16','14','2','7')
 ),
@@ -12,7 +12,7 @@ g0 AS (
     ANY_VALUE(veiculocaptacao_dn) vei, ANY_VALUE(bairro_imovel) bai, ANY_VALUE(categoria_imovel) cat,
     ANY_VALUE(dormitorios_imovel) dor, ANY_VALUE(areaprivativa_imovel) are, ARRAY_AGG(DISTINCT IFNULL(nome_usuario,'')) cors
   FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`
-  WHERE Assunto IN ('Negócio ganho', 'Negocio Ganho via API') AND Data BETWEEN '2026-01-01' AND CURRENT_DATE()
+  WHERE Assunto IN ('Negócio ganho', 'Negocio Ganho via API') AND Data BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)
   GROUP BY 1
 ),
 u AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),
@@ -25,7 +25,7 @@ base AS (
   SELECT DISTINCT 0 m, DATE(Data) d, CodigoCliente x, nome_usuario cor, veiculocaptacao_dn vei, bairro_imovel bai, categoria_imovel cat,
     Dormitorios dor, CAST(ROUND(SAFE_CAST(AreaPrivativa AS FLOAT64)) AS INT64) are, CAST(NULL AS STRING) imo, CAST(NULL AS INT64) val
   FROM `vistaprocessos.nitro_dados.vw_consolidado_clientes_capturados_polo`
-  WHERE DATE(Data) BETWEEN '2026-01-01' AND CURRENT_DATE()
+  WHERE DATE(Data) BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)
   UNION DISTINCT
   SELECT CASE EtapaAcaoId WHEN '9' THEN 1 WHEN '17' THEN 2 WHEN '13' THEN 3 WHEN '16' THEN 3 WHEN '14' THEN 4 WHEN '2' THEN 5 ELSE 6 END,
     Data, CodigoCliente, nome_usuario, veiculocaptacao_dn, bairro_imovel, categoria_imovel, dormitorios_imovel,
@@ -37,7 +37,7 @@ base AS (
   UNION DISTINCT
   SELECT m, i0.d, i0.codigo, u.nome, NULL, bai, cat, dor, CAST(ROUND(are) AS INT64), NULL, NULL
   FROM i0 LEFT JOIN u ON u.codigo = i0.cc, UNNEST(IF(LOWER(pl) = 'sim', [8, 9], [8])) m
-  WHERE i0.d BETWEEN '2026-01-01' AND CURRENT_DATE()
+  WHERE i0.d BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)
 ),
 k AS (
   SELECT 'cor' t, cor v FROM base WHERE cor IS NOT NULL GROUP BY 2 UNION ALL
