@@ -8,7 +8,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24b dados desde 2026 + tela de senha nova -->
+<!-- v2026-10-24c senha: sem compressão, aviso de navegador, ?sair -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -325,14 +325,14 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
   window.__poloCfg = {
     alvo: '#portao',
     tela: function (erro) {
-      portao.hidden = false;
+      portao.hidden = false; document.documentElement.style.overflow = 'hidden';
       return '<form id="fsenha" autocomplete="on">' +
         '<div class="pm" aria-hidden="true"><i class="k"></i><i class="r"></i><i class="r"></i><i class="k"></i><b>P<span>R</span></b></div>' +
         '<div><div class="ey">POLO RESIDENCIAL</div><h1>Dashboard Polo</h1></div>' +
         '<p>Digite a senha da Polo para abrir o painel. Ela fica salva neste navegador.</p>' +
         '<label for="isenha" style="position:absolute;left:-9999px">Senha</label>' +
         '<input id="isenha" type="password" autocomplete="current-password">' +
-        (erro ? '<p class="er" role="alert">Senha incorreta. Tente de novo.</p>' : '') +
+        (erro === true ? '<p class="er" role="alert">Senha incorreta. Tente de novo.</p>' : '') +
         '<button type="submit">Entrar</button>' +
       '</form>' +
       '<div class="rod">CreativeImob · Data &amp; BI</div>';
@@ -351,6 +351,7 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
   async function decifrar(pkg, senha) {
     var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
     var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(pkg.salt), iterations: pkg.it, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    if (pkg.z && typeof DecompressionStream === 'undefined') throw new Error('sem DecompressionStream');
     var claro = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(pkg.iv) }, key, b64(pkg.ct));
     var texto = pkg.z
       ? await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream('deflate'))).text()
@@ -377,18 +378,24 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
     return new Promise(function (ok) {
       var alvo = document.querySelector(cfg.alvo || '#stage');
       alvo.innerHTML = (cfg.tela || telaTV)(erro);
+      if (erro === 'nav') alvo.querySelector('#fsenha').insertAdjacentHTML('beforeend', '<p class="er" role="alert" style="color:#ff6b57">Este navegador não conseguiu abrir os dados. Atualize o navegador ou use Chrome, Edge ou Safari recente.</p>');
       var inp = document.getElementById('isenha'); setTimeout(function () { inp.focus(); }, 50);
       document.getElementById('fsenha').addEventListener('submit', function (ev) {
         ev.preventDefault();
         var s = inp.value; if (!s) return;
-        decifrar(pkg, s).then(function (d) { guardar(s); ok(d); }).catch(function () { pedirSenha(pkg, true).then(ok); });
+        decifrar(pkg, s).then(function (d) { guardar(s); ok(d); }).catch(function (e) {
+          // OperationError = senha errada; qualquer outro erro é limitação do navegador
+          pedirSenha(pkg, e && e.name === 'OperationError' ? true : 'nav').then(ok);
+        });
       });
     });
   }
   window.__poloFonte = async function () {
     var r = await fetch('data.enc.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('http ' + r.status);
-    var pkg = await r.json(), s = lerSenha();
+    var pkg = await r.json();
+    if (/[?&#]sair\b/.test(location.href)) esquecer();   // ?sair apaga a senha salva neste navegador
+    var s = lerSenha();
     if (s) { try { return await decifrar(pkg, s); } catch (e) { esquecer(); } }
     return pedirSenha(pkg, false);
   };
@@ -971,7 +978,7 @@ async function carregar(forcar) {
     try {
       var res = await window.__poloFonte(forcar);
       if (!res) return;
-      var portao = document.getElementById('portao'); if (portao) portao.remove();
+      var portao = document.getElementById('portao'); if (portao) { portao.remove(); document.documentElement.style.overflow = ''; }
       $('#filters').style.visibility = $('#presets').style.visibility = '';
       aplicar({ rows: res.rows.map(function (r) { return { f: r.map(function (v) { return { v: v }; }) }; }) }, null);
       if (res.gerado) $('#stamp').textContent = 'Dados até ' + fmt.data(hojeIdx() - 1) + ' · gerados em ' + new Date(res.gerado).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });

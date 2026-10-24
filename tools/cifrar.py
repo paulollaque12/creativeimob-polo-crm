@@ -50,7 +50,7 @@ else:
 
 dados = {'gerado': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'), 'rows': rows}
 claro = json.dumps(dados, ensure_ascii=False, separators=(',', ':')).encode()
-z = 1 if painel else 0
+z = 0  # sem compressão: DecompressionStream não existe em navegadores antigos (iOS < 16.4)
 if z:
     claro = zlib.compress(claro, 9)
 salt, iv = os.urandom(16), os.urandom(12)

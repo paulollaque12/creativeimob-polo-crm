@@ -9,6 +9,7 @@
   async function decifrar(pkg, senha) {
     var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
     var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(pkg.salt), iterations: pkg.it, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    if (pkg.z && typeof DecompressionStream === 'undefined') throw new Error('sem DecompressionStream');
     var claro = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(pkg.iv) }, key, b64(pkg.ct));
     var texto = pkg.z
       ? await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream('deflate'))).text()
@@ -35,18 +36,24 @@
     return new Promise(function (ok) {
       var alvo = document.querySelector(cfg.alvo || '#stage');
       alvo.innerHTML = (cfg.tela || telaTV)(erro);
+      if (erro === 'nav') alvo.querySelector('#fsenha').insertAdjacentHTML('beforeend', '<p class="er" role="alert" style="color:#ff6b57">Este navegador não conseguiu abrir os dados. Atualize o navegador ou use Chrome, Edge ou Safari recente.</p>');
       var inp = document.getElementById('isenha'); setTimeout(function () { inp.focus(); }, 50);
       document.getElementById('fsenha').addEventListener('submit', function (ev) {
         ev.preventDefault();
         var s = inp.value; if (!s) return;
-        decifrar(pkg, s).then(function (d) { guardar(s); ok(d); }).catch(function () { pedirSenha(pkg, true).then(ok); });
+        decifrar(pkg, s).then(function (d) { guardar(s); ok(d); }).catch(function (e) {
+          // OperationError = senha errada; qualquer outro erro é limitação do navegador
+          pedirSenha(pkg, e && e.name === 'OperationError' ? true : 'nav').then(ok);
+        });
       });
     });
   }
   window.__poloFonte = async function () {
     var r = await fetch('data.enc.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('http ' + r.status);
-    var pkg = await r.json(), s = lerSenha();
+    var pkg = await r.json();
+    if (/[?&#]sair\b/.test(location.href)) esquecer();   // ?sair apaga a senha salva neste navegador
+    var s = lerSenha();
     if (s) { try { return await decifrar(pkg, s); } catch (e) { esquecer(); } }
     return pedirSenha(pkg, false);
   };

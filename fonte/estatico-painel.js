@@ -30,14 +30,14 @@
   window.__poloCfg = {
     alvo: '#portao',
     tela: function (erro) {
-      portao.hidden = false;
+      portao.hidden = false; document.documentElement.style.overflow = 'hidden';
       return '<form id="fsenha" autocomplete="on">' +
         '<div class="pm" aria-hidden="true"><i class="k"></i><i class="r"></i><i class="r"></i><i class="k"></i><b>P<span>R</span></b></div>' +
         '<div><div class="ey">POLO RESIDENCIAL</div><h1>Dashboard Polo</h1></div>' +
         '<p>Digite a senha da Polo para abrir o painel. Ela fica salva neste navegador.</p>' +
         '<label for="isenha" style="position:absolute;left:-9999px">Senha</label>' +
         '<input id="isenha" type="password" autocomplete="current-password">' +
-        (erro ? '<p class="er" role="alert">Senha incorreta. Tente de novo.</p>' : '') +
+        (erro === true ? '<p class="er" role="alert">Senha incorreta. Tente de novo.</p>' : '') +
         '<button type="submit">Entrar</button>' +
       '</form>' +
       '<div class="rod">CreativeImob · Data &amp; BI</div>';
