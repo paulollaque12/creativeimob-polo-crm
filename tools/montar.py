@@ -21,13 +21,19 @@ def juntar(ui, sql):
     return out
 
 
+# Ícone da CreativeImob (o mesmo do dashboard de performance); arquivos em docs/
+ICONES = ('<link rel="icon" href="favicon.ico?v=1" sizes="any">\n'
+          '<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=1">\n'
+          '<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">\n')
+
+
 def estatica(corpo, extra_js, destino):
     """Documento completo: o leitor do arquivo cifrado entra antes dos scripts da página."""
     i = corpo.index('<script>\n')
     corpo = corpo[:i] + '<script>\n' + extra_js + '\n</script>\n' + corpo[i:]
     pagina = ('<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
               '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-              '<meta name="robots" content="noindex,nofollow">\n</head>\n<body>\n' + corpo + '\n</body>\n</html>\n')
+              '<meta name="robots" content="noindex,nofollow">\n' + ICONES + '</head>\n<body>\n' + corpo + '\n</body>\n</html>\n')
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(pagina)
     print('ok:', destino.relative_to(R), len(pagina), 'bytes')
