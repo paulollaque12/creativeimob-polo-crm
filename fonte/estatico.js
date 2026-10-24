@@ -16,9 +16,12 @@
       : new TextDecoder().decode(claro);
     return JSON.parse(texto);
   }
-  function lerSenha() { try { return localStorage.getItem(CHAVE); } catch (e) { return null; } }
-  function guardar(s) { try { localStorage.setItem(CHAVE, s); } catch (e) {} }
-  function esquecer() { try { localStorage.removeItem(CHAVE); } catch (e) {} }
+  // Painel (lembrar:false): senha só nesta aba, pedida a cada abertura. TV: fica salva no aparelho.
+  function loja() { var c = window.__poloCfg || {}; return c.lembrar === false ? sessionStorage : localStorage; }
+  if ((window.__poloCfg || {}).lembrar === false) { try { localStorage.removeItem(CHAVE); } catch (e) {} }
+  function lerSenha() { try { return loja().getItem(CHAVE); } catch (e) { return null; } }
+  function guardar(s) { try { loja().setItem(CHAVE, s); } catch (e) {} }
+  function esquecer() { try { loja().removeItem(CHAVE); } catch (e) {} }
   function telaTV(erro) {
     return '<div class="st" style="background:#0b0b0c;color:#f2f0ed;display:flex;align-items:center;justify-content:center">' +
       '<form id="fsenha" style="width:640px;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center">' +

@@ -8,7 +8,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24c senha: sem compressão, aviso de navegador, ?sair -->
+<!-- v2026-10-24d escuro padrão, gráficos em vermelho Polo, senha a cada abertura -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -16,7 +16,7 @@
 /* Layout: barra lateral em tinta preta (o quadrante do logo) + área de leitura clara; o funil é a peça central. */
 :root{
   --paper:#f3f3f1; --surface:#ffffff; --ink:#151515; --ink2:#5e5b57; --ink3:#8d8984; --line:#e3e1dd; --track:#eeece9;
-  --red:#ad111b; --red2:#c8323a; --redsoft:#f6e3e3; --bar:#2a2a2a; --barsoft:#c9c6c1;
+  --red:#ad111b; --red2:#c8323a; --redsoft:#f6e3e3; --bar:#b0121c; --barsoft:#e8c3c5;
   --side:#121212; --side2:#1c1c1d; --sidefg:#ecebe8; --sidemut:#8f8b86;
   --up:#2b7a4b; --down:#b4601a; --upbg:#e3f1e8; --downbg:#f8ebdf;
   --display:Sora,system-ui,sans-serif;
@@ -25,12 +25,12 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#0e0e0f; --surface:#171718; --ink:#efedea; --ink2:#a6a29c; --ink3:#77736e; --line:#29292b; --track:#212123;
-  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#d9d6d1; --barsoft:#4a4846;
+  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#cf2530; --barsoft:#5c1d21;
   --side:#08080a; --side2:#141416; --sidefg:#ecebe8; --sidemut:#85817c;
   --up:#4cc27f; --down:#e8964d; --upbg:#15291e; --downbg:#2e1f12; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#0e0e0f; --surface:#171718; --ink:#efedea; --ink2:#a6a29c; --ink3:#77736e; --line:#29292b; --track:#212123;
-  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#d9d6d1; --barsoft:#4a4846;
+  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#cf2530; --barsoft:#5c1d21;
   --side:#08080a; --side2:#141416; --sidefg:#ecebe8; --sidemut:#85817c;
   --up:#4cc27f; --down:#e8964d; --upbg:#15291e; --downbg:#2e1f12; color-scheme:dark}
 *{box-sizing:border-box}
@@ -324,12 +324,13 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 
   window.__poloCfg = {
     alvo: '#portao',
+    lembrar: false,
     tela: function (erro) {
       portao.hidden = false; document.documentElement.style.overflow = 'hidden';
       return '<form id="fsenha" autocomplete="on">' +
         '<div class="pm" aria-hidden="true"><i class="k"></i><i class="r"></i><i class="r"></i><i class="k"></i><b>P<span>R</span></b></div>' +
         '<div><div class="ey">POLO RESIDENCIAL</div><h1>Dashboard Polo</h1></div>' +
-        '<p>Digite a senha da Polo para abrir o painel. Ela fica salva neste navegador.</p>' +
+        '<p>Digite a senha da Polo para abrir o painel.</p>' +
         '<label for="isenha" style="position:absolute;left:-9999px">Senha</label>' +
         '<input id="isenha" type="password" autocomplete="current-password">' +
         (erro === true ? '<p class="er" role="alert">Senha incorreta. Tente de novo.</p>' : '') +
@@ -358,9 +359,12 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
       : new TextDecoder().decode(claro);
     return JSON.parse(texto);
   }
-  function lerSenha() { try { return localStorage.getItem(CHAVE); } catch (e) { return null; } }
-  function guardar(s) { try { localStorage.setItem(CHAVE, s); } catch (e) {} }
-  function esquecer() { try { localStorage.removeItem(CHAVE); } catch (e) {} }
+  // Painel (lembrar:false): senha só nesta aba, pedida a cada abertura. TV: fica salva no aparelho.
+  function loja() { var c = window.__poloCfg || {}; return c.lembrar === false ? sessionStorage : localStorage; }
+  if ((window.__poloCfg || {}).lembrar === false) { try { localStorage.removeItem(CHAVE); } catch (e) {} }
+  function lerSenha() { try { return loja().getItem(CHAVE); } catch (e) { return null; } }
+  function guardar(s) { try { loja().setItem(CHAVE, s); } catch (e) {} }
+  function esquecer() { try { loja().removeItem(CHAVE); } catch (e) {} }
   function telaTV(erro) {
     return '<div class="st" style="background:#0b0b0c;color:#f2f0ed;display:flex;align-items:center;justify-content:center">' +
       '<form id="fsenha" style="width:640px;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center">' +
@@ -555,12 +559,14 @@ function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&
 
 /* ---------- tema ---------- */
 (function () {
-  try { var t = localStorage.getItem('polo-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  // Escuro é o padrão; o botão Tema alterna e a escolha fica salva
+  var t = 'dark'; try { t = localStorage.getItem('polo-tema') || 'dark'; } catch (e) {}
+  document.documentElement.setAttribute('data-theme', t);
   $('#theme').onclick = function () {
-    var cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var cur = document.documentElement.getAttribute('data-theme') || 'dark';
     var nx = cur === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', nx);
-    try { localStorage.setItem('polo-theme', nx); } catch (e) {}
+    try { localStorage.setItem('polo-tema', nx); } catch (e) {}
   };
 })();
 
@@ -801,7 +807,7 @@ function rPf(v) {
 }
 
 /* ---------- Exploração ---------- */
-var PALS = ['var(--red)', 'var(--bar)', '#8a7f78', '#c47a7e', '#5f5a55', '#b9b3ac', '#e3a8ab'];
+var PALS = ['var(--red)', '#7c0e15', '#e0767c', '#8d8984', '#f0b3b6', '#5e5b57', '#c9c6c1'];
 function rEx(v) {
   var f = F(), dk = ST.exd, dim = dimBy(dk), m = ST.exm;
   var grupos = {}, METS = FUNIL.concat(dim.semImovel ? [] : [8]);
