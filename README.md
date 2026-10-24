@@ -2,6 +2,13 @@
 
 Painéis da Polo Residencial alimentados pelo Vista CRM no BigQuery (`vistaprocessos.nitro_dados`, `imobiliaria_id = 1005`).
 
+## Dashboard Polo (`docs/painel/`)
+
+- **Site (GitHub Pages, com senha):** `/painel/`. Cinco abas: Visão Geral (funil de 8 etapas + resultado do período + evolução), Performance (corretor × semana), Exploração (funil por corretor, veículo, bairro, tipologia, dormitórios, área), Comparativo (dois períodos) e Financeiro (vendas, VGV, ticket, negócios ganhos).
+- **Dados:** `sql/painel-cubo.sql` (o "cubo", desde 01/01/2025) → `tools/cifrar.py --painel` → `docs/painel/data.enc.json` (AES-GCM + zlib, ~130 KB). Todo o cálculo é feito no navegador por `fonte/core.js`.
+- **Senha:** a mesma do ranking; digitada uma vez num navegador, abre as duas páginas.
+- **Regras:** vendas = `Negócio ganho` + `Negocio Ganho via API` (decisão de 24/10/2026); Proposta = etapa 7, como no DAX do cliente.
+
 ## Ranking de corretores para a TV
 
 - **Site (GitHub Pages, com senha):** `docs/index.html` lê `docs/data.enc.json`, cifrado com AES-GCM (chave PBKDF2-SHA256, 250 mil iterações). A senha é pedida uma vez e fica salva naquela tela. A senha **nunca** vai para o repositório.

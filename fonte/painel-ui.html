@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-15b fontes Sora + Manrope -->
+<!-- v2026-10-24a site estático com senha + vendas via API -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -713,6 +713,21 @@ function erro(e) {
   else estado('Não foi possível carregar os dados', 'O BigQuery não respondeu a tempo (' + esc(c || 'erro') + '). Tente de novo em instantes.', 'Tentar de novo', function () { carregar(true); });
 }
 async function carregar(forcar) {
+  // Versão estática (GitHub Pages): window.__poloFonte devolve as linhas do cubo já decifradas
+  if (window.__poloFonte) {
+    if (!C) { carregando(); $('#filters').style.visibility = $('#presets').style.visibility = 'hidden'; }
+    try {
+      var res = await window.__poloFonte(forcar);
+      if (!res) return;
+      $('#filters').style.visibility = $('#presets').style.visibility = '';
+      aplicar({ rows: res.rows.map(function (r) { return { f: r.map(function (v) { return { v: v }; }) }; }) }, null);
+      if (res.gerado) $('#stamp').textContent = 'Dados até ' + fmt.data(hojeIdx() - 1) + ' · gerados em ' + new Date(res.gerado).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      if (C) { $('#stamp').textContent = 'Falha ao atualizar; mostrando a última leitura.'; return; }
+      estado('Não foi possível carregar', 'O arquivo de dados não respondeu. Confira a conexão e tente de novo.', 'Tentar de novo', function () { carregar(true); });
+    }
+    return;
+  }
   if (!C) carregando();
   if (!MCP) MCP = await claude.use('mcp');
   if (!MCP) { estado('Abra no claude.ai', 'Este painel consulta o BigQuery com o conector do claude.ai e só carrega dados quando aberto lá, com sua conta conectada.'); return; }

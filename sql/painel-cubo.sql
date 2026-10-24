@@ -1,4 +1,4 @@
-/*polo-cubo v1*/
+/*polo-cubo v2*/
 WITH
 d0 AS (
   SELECT Data, CodigoCliente, EtapaAcaoId, nome_usuario, veiculocaptacao_dn, bairro_imovel, categoria_imovel, dormitorios_imovel, areaprivativa_imovel
@@ -12,7 +12,7 @@ g0 AS (
     ANY_VALUE(veiculocaptacao_dn) vei, ANY_VALUE(bairro_imovel) bai, ANY_VALUE(categoria_imovel) cat,
     ANY_VALUE(dormitorios_imovel) dor, ANY_VALUE(areaprivativa_imovel) are, ARRAY_AGG(DISTINCT IFNULL(nome_usuario,'')) cors
   FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`
-  WHERE Assunto = 'Negócio ganho' AND Data BETWEEN '2025-01-01' AND CURRENT_DATE()
+  WHERE Assunto IN ('Negócio ganho', 'Negocio Ganho via API') AND Data BETWEEN '2025-01-01' AND CURRENT_DATE()
   GROUP BY 1
 ),
 u AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),

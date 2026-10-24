@@ -13,7 +13,7 @@ lim AS (SELECT MIN(a) a0, MAX(b) b0 FROM per),
 g AS (
   SELECT CodigoNegocio x, MIN(Data) d, ANY_VALUE(CodigoEmImovel) imo, MAX(valornegocio_dn) val, ARRAY_AGG(DISTINCT IFNULL(nome_usuario, '')) cors
   FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim
-  WHERE Assunto = 'Negócio ganho' AND Data BETWEEN DATE_SUB(a0, INTERVAL 40 DAY) AND b0
+  WHERE Assunto IN ('Negócio ganho', 'Negocio Ganho via API') AND Data BETWEEN DATE_SUB(a0, INTERVAL 40 DAY) AND b0
   GROUP BY 1
 ),
 u AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),

@@ -1,13 +1,18 @@
-# Rotina diária do ranking (dados do site)
+# Atualização dos dados do site
 
-Executada pela tarefa agendada. Em qualquer falha, **pare sem publicar** e relate o erro.
+Hoje a atualização é manual (sem tarefa agendada). Em qualquer falha, **pare sem publicar** e relate o erro.
 
-1. Clonar: `git clone --depth 1 https://github.com/paulollaque12/creativeimob-polo-crm` e entrar na pasta.
-2. Rodar o conteúdo de `sql/ranking-tv.sql` com o conector do BigQuery (`execute_sql_readonly`, `projectId: vistaprocessos`, `timeoutMs: 90000`). Se vier `jobComplete: false`, buscar com `get_query_results` (`location: us-east1`).
-3. Gravar as linhas do resultado (são ~30, uns 4 KB) num arquivo temporário fora do repositório, no formato `[["k","m","s"], ...]`, na ordem das colunas `k`, `m`, `s`.
-4. Cifrar: `DASH_SENHA='<senha da tarefa>' python3 tools/cifrar.py <arquivo>` (precisa de `pip install cryptography --break-system-packages` se faltar). Conferir na saída que "dados até" é ontem.
-5. Publicar só o arquivo de dados:
-   `git add docs/data.enc.json && git commit -m "dados: <data de ontem>" && git push origin main`
+1. Clonar: `git clone --depth 1 https://github.com/paulollaque12/creativeimob-polo-crm` e entrar na pasta. `pip install cryptography --break-system-packages` se faltar.
+2. **Dashboard Polo:** rodar `sql/painel-cubo.sql` com o conector do BigQuery (`execute_sql_readonly`, `projectId: vistaprocessos`, `timeoutMs: 90000`). O resultado (~470 mil caracteres) é grande: o conector o salva em arquivo e informa o caminho. Copiar esse arquivo para fora do repositório e rodar
+   `DASH_SENHA='<senha>' python3 tools/cifrar.py --painel <arquivo>`
+   Conferir na saída a data de referência (hoje) e as contagens m0..m8 (nenhuma pode cair a zero de um dia para o outro).
+3. **Ranking da TV:** rodar `sql/ranking-tv.sql` (resultado pequeno, ~30 linhas), gravar as linhas como `[["k","m","s"], ...]` num arquivo fora do repositório e rodar
+   `DASH_SENHA='<senha>' python3 tools/cifrar.py <arquivo>`
+   Conferir que "dados até" é ontem.
+4. Publicar só os arquivos de dados:
+   `git add docs/data.enc.json docs/painel/data.enc.json && git commit -m "dados ate AAAA-MM-DD" && git push origin main`
    (com as linhas Co-Authored-By exigidas).
 
-Regras: nunca gravar a senha em arquivo, commit ou mensagem; nunca commitar o resultado em claro; não mexer em outros arquivos na rotina.
+Se mudar alguma fonte (`fonte/`, `sql/`), rodar antes `python3 tools/montar.py` e commitar também `docs/index.html` e `docs/painel/index.html`.
+
+Regras: nunca gravar a senha em arquivo, commit ou mensagem; nunca commitar resultados em claro.

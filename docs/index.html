@@ -97,8 +97,11 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 </div>
 
 <script>
-/* Ranking Polo TV · versão estática (GitHub Pages)
-   Lê docs/data.enc.json (AES-GCM, chave PBKDF2-SHA256), pede a senha uma vez e a guarda neste aparelho. */
+/* Polo · versão estática (GitHub Pages)
+   Lê o arquivo cifrado (AES-GCM, chave PBKDF2-SHA256; opcionalmente comprimido com zlib),
+   pede a senha uma vez e a guarda neste aparelho (a mesma para o ranking e o painel).
+   Configuração opcional em window.__poloCfg = { alvo: seletor, tela: function (erro) { return html } }:
+   a tela precisa ter um <form id="fsenha"> com um <input id="isenha">. Sem configuração, usa a tela do ranking da TV. */
 (function () {
   var CHAVE = 'polo-tv-senha';
   function b64(s) { var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
@@ -106,25 +109,31 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
     var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
     var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(pkg.salt), iterations: pkg.it, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
     var claro = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(pkg.iv) }, key, b64(pkg.ct));
-    return JSON.parse(new TextDecoder().decode(claro));
+    var texto = pkg.z
+      ? await new Response(new Blob([claro]).stream().pipeThrough(new DecompressionStream('deflate'))).text()
+      : new TextDecoder().decode(claro);
+    return JSON.parse(texto);
   }
   function lerSenha() { try { return localStorage.getItem(CHAVE); } catch (e) { return null; } }
   function guardar(s) { try { localStorage.setItem(CHAVE, s); } catch (e) {} }
   function esquecer() { try { localStorage.removeItem(CHAVE); } catch (e) {} }
+  function telaTV(erro) {
+    return '<div class="st" style="background:#0b0b0c;color:#f2f0ed;display:flex;align-items:center;justify-content:center">' +
+      '<form id="fsenha" style="width:640px;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center">' +
+        '<div class="mono" aria-hidden="true" style="width:72px;height:72px"><i class="k"></i><i class="r"></i><i class="r"></i><i class="k"></i><b style="inset:18px;font-size:19px">P<span>R</span></b></div>' +
+        '<div style="display:flex;flex-direction:column;gap:12px"><h1 style="margin:0;font:600 48px/1.1 var(--sora);letter-spacing:-.02em">Top Corretores</h1>' +
+        '<p style="margin:0;font:500 21px/1.4 var(--man);color:#8f8b86">Digite a senha da Polo para abrir o ranking. Ela fica salva nesta tela.</p></div>' +
+        '<label for="isenha" style="position:absolute;left:-9999px">Senha</label>' +
+        '<input id="isenha" type="password" autocomplete="current-password" style="width:100%;height:72px;padding:0 24px;border-radius:14px;border:1px solid #2c2c2f;background:#151517;color:#f2f0ed;font:600 26px var(--man);text-align:center;letter-spacing:.08em">' +
+        (erro ? '<p role="alert" style="margin:-8px 0 0;font:600 19px var(--man);color:#ff6b57">Senha incorreta. Tente de novo.</p>' : '') +
+        '<button type="submit" style="all:unset;cursor:pointer;width:100%;height:72px;border-radius:14px;background:#b0121c;color:#fff;font:700 24px/72px var(--man);text-align:center">Entrar</button>' +
+      '</form></div>';
+  }
   function pedirSenha(pkg, erro) {
+    var cfg = window.__poloCfg || {};
     return new Promise(function (ok) {
-      var st = document.getElementById('stage');
-      st.innerHTML =
-        '<div class="st" style="background:#0b0b0c;color:#f2f0ed;display:flex;align-items:center;justify-content:center">' +
-        '<form id="fsenha" style="width:640px;display:flex;flex-direction:column;align-items:center;gap:26px;text-align:center">' +
-          '<div class="mono" aria-hidden="true" style="width:72px;height:72px"><i class="k"></i><i class="r"></i><i class="r"></i><i class="k"></i><b style="inset:18px;font-size:19px">P<span>R</span></b></div>' +
-          '<div style="display:flex;flex-direction:column;gap:12px"><h1 style="margin:0;font:600 48px/1.1 var(--sora);letter-spacing:-.02em">Top Corretores</h1>' +
-          '<p style="margin:0;font:500 21px/1.4 var(--man);color:#8f8b86">Digite a senha da Polo para abrir o ranking. Ela fica salva nesta tela.</p></div>' +
-          '<label for="isenha" style="position:absolute;left:-9999px">Senha</label>' +
-          '<input id="isenha" type="password" autocomplete="current-password" style="width:100%;height:72px;padding:0 24px;border-radius:14px;border:1px solid #2c2c2f;background:#151517;color:#f2f0ed;font:600 26px var(--man);text-align:center;letter-spacing:.08em">' +
-          (erro ? '<p role="alert" style="margin:-8px 0 0;font:600 19px var(--man);color:#ff6b57">Senha incorreta. Tente de novo.</p>' : '') +
-          '<button type="submit" style="all:unset;cursor:pointer;width:100%;height:72px;border-radius:14px;background:#b0121c;color:#fff;font:700 24px/72px var(--man);text-align:center">Entrar</button>' +
-        '</form></div>';
+      var alvo = document.querySelector(cfg.alvo || '#stage');
+      alvo.innerHTML = (cfg.tela || telaTV)(erro);
       var inp = document.getElementById('isenha'); setTimeout(function () { inp.focus(); }, 50);
       document.getElementById('fsenha').addEventListener('submit', function (ev) {
         ev.preventDefault();
@@ -315,7 +324,7 @@ if (typeof module !== 'undefined') module.exports = { parseCubo: parseCubo, funi
 
 </script>
 <script>
-var SQL = "/*polo-tv v2*/\nWITH\np AS (SELECT DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) L),\nper AS (\n  SELECT 'ano' k, DATE_TRUNC(L, YEAR) a, L b FROM p UNION ALL\n  SELECT 'mes', DATE_TRUNC(L, MONTH), L FROM p UNION ALL\n  SELECT 'mes_ant', DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 MONTH),\n    LEAST(DATE_ADD(DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 MONTH), INTERVAL DATE_DIFF(L, DATE_TRUNC(L, MONTH), DAY) DAY), DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 DAY)) FROM p UNION ALL\n  SELECT 'sem', DATE_TRUNC(L, WEEK(MONDAY)), L FROM p UNION ALL\n  SELECT 'sem_ant', DATE_SUB(DATE_TRUNC(L, WEEK(MONDAY)), INTERVAL 7 DAY), DATE_SUB(L, INTERVAL 7 DAY) FROM p\n),\nlim AS (SELECT MIN(a) a0, MAX(b) b0 FROM per),\ng AS (\n  SELECT CodigoNegocio x, MIN(Data) d, ANY_VALUE(CodigoEmImovel) imo, MAX(valornegocio_dn) val, ARRAY_AGG(DISTINCT IFNULL(nome_usuario, '')) cors\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim\n  WHERE Assunto = 'Negócio ganho' AND Data BETWEEN DATE_SUB(a0, INTERVAL 40 DAY) AND b0\n  GROUP BY 1\n),\nu AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),\nev AS (\n  SELECT 'leads' m, DATE(c.Data) d, c.nome_usuario cor, c.CodigoCliente x, CAST(NULL AS STRING) imo, CAST(NULL AS FLOAT64) val\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_clientes_capturados_polo` c, lim\n  WHERE DATE(c.Data) BETWEEN a0 AND b0\n  UNION ALL\n  SELECT CASE WHEN EtapaAcaoId IN ('13','16') THEN 'atd' WHEN EtapaAcaoId = '14' THEN 'agd' ELSE 'vis' END, Data, nome_usuario, CodigoCliente, NULL, NULL\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim\n  WHERE Data BETWEEN a0 AND b0 AND EtapaAcaoId IN ('13','16','14','2')\n    AND (Assunto IS NULL OR Assunto NOT IN ('Negócio ganho','Negócio perdido'))\n  UNION ALL\n  SELECT 'vend', d, NULLIF(c, ''), x, imo, CAST(val AS FLOAT64) FROM g, UNNEST(cors) c, lim WHERE d BETWEEN a0 AND b0\n  UNION ALL\n  SELECT 'agc', DATE(i.data_cadastro), u.nome, i.codigo, NULL, NULL\n  FROM `vistaprocessos.nitro_dados.vista_imoveis` i LEFT JOIN u ON u.codigo = i.codigo_corretor, lim\n  WHERE i.imobiliaria_id = 1005 AND DATE(i.data_cadastro) BETWEEN a0 AND b0\n),\nj AS (\n  SELECT per.k, ev.m, ev.cor, ev.x, ev.imo, ev.val FROM per JOIN ev ON ev.d BETWEEN per.a AND per.b WHERE ev.cor IS NOT NULL\n  UNION ALL\n  SELECT per.k, ev.m, '*', ev.x, ev.imo, ev.val FROM per JOIN ev ON ev.d BETWEEN per.a AND per.b\n),\ncnt AS (SELECT k, m, cor, COUNT(DISTINCT x) n FROM j GROUP BY 1, 2, 3),\nvg AS (\n  SELECT k, 'vgv' m, cor, SUM(mx) v FROM (\n    SELECT k, cor, COALESCE(imo, CONCAT('n', x)) ik, MAX(val) mx FROM j WHERE m = 'vend' GROUP BY 1, 2, 3\n  ) GROUP BY 1, 2, 3\n),\nlin AS (\n  SELECT k, m, CONCAT(cor, '|', CAST(n AS STRING)) t FROM cnt\n  UNION ALL\n  SELECT k, m, CONCAT(cor, '|', CAST(CAST(ROUND(v) AS INT64) AS STRING)) FROM vg\n)\nSELECT k, m, STRING_AGG(t, ';' ORDER BY t) s FROM lin GROUP BY 1, 2\nUNION ALL\nSELECT k, '_per', CONCAT(CAST(a AS STRING), '|', CAST(b AS STRING)) FROM per\n";
+var SQL = "/*polo-tv v2*/\nWITH\np AS (SELECT DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) L),\nper AS (\n  SELECT 'ano' k, DATE_TRUNC(L, YEAR) a, L b FROM p UNION ALL\n  SELECT 'mes', DATE_TRUNC(L, MONTH), L FROM p UNION ALL\n  SELECT 'mes_ant', DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 MONTH),\n    LEAST(DATE_ADD(DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 MONTH), INTERVAL DATE_DIFF(L, DATE_TRUNC(L, MONTH), DAY) DAY), DATE_SUB(DATE_TRUNC(L, MONTH), INTERVAL 1 DAY)) FROM p UNION ALL\n  SELECT 'sem', DATE_TRUNC(L, WEEK(MONDAY)), L FROM p UNION ALL\n  SELECT 'sem_ant', DATE_SUB(DATE_TRUNC(L, WEEK(MONDAY)), INTERVAL 7 DAY), DATE_SUB(L, INTERVAL 7 DAY) FROM p\n),\nlim AS (SELECT MIN(a) a0, MAX(b) b0 FROM per),\ng AS (\n  SELECT CodigoNegocio x, MIN(Data) d, ANY_VALUE(CodigoEmImovel) imo, MAX(valornegocio_dn) val, ARRAY_AGG(DISTINCT IFNULL(nome_usuario, '')) cors\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim\n  WHERE Assunto IN ('Negócio ganho', 'Negocio Ganho via API') AND Data BETWEEN DATE_SUB(a0, INTERVAL 40 DAY) AND b0\n  GROUP BY 1\n),\nu AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),\nev AS (\n  SELECT 'leads' m, DATE(c.Data) d, c.nome_usuario cor, c.CodigoCliente x, CAST(NULL AS STRING) imo, CAST(NULL AS FLOAT64) val\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_clientes_capturados_polo` c, lim\n  WHERE DATE(c.Data) BETWEEN a0 AND b0\n  UNION ALL\n  SELECT CASE WHEN EtapaAcaoId IN ('13','16') THEN 'atd' WHEN EtapaAcaoId = '14' THEN 'agd' ELSE 'vis' END, Data, nome_usuario, CodigoCliente, NULL, NULL\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`, lim\n  WHERE Data BETWEEN a0 AND b0 AND EtapaAcaoId IN ('13','16','14','2')\n    AND (Assunto IS NULL OR Assunto NOT IN ('Negócio ganho','Negócio perdido'))\n  UNION ALL\n  SELECT 'vend', d, NULLIF(c, ''), x, imo, CAST(val AS FLOAT64) FROM g, UNNEST(cors) c, lim WHERE d BETWEEN a0 AND b0\n  UNION ALL\n  SELECT 'agc', DATE(i.data_cadastro), u.nome, i.codigo, NULL, NULL\n  FROM `vistaprocessos.nitro_dados.vista_imoveis` i LEFT JOIN u ON u.codigo = i.codigo_corretor, lim\n  WHERE i.imobiliaria_id = 1005 AND DATE(i.data_cadastro) BETWEEN a0 AND b0\n),\nj AS (\n  SELECT per.k, ev.m, ev.cor, ev.x, ev.imo, ev.val FROM per JOIN ev ON ev.d BETWEEN per.a AND per.b WHERE ev.cor IS NOT NULL\n  UNION ALL\n  SELECT per.k, ev.m, '*', ev.x, ev.imo, ev.val FROM per JOIN ev ON ev.d BETWEEN per.a AND per.b\n),\ncnt AS (SELECT k, m, cor, COUNT(DISTINCT x) n FROM j GROUP BY 1, 2, 3),\nvg AS (\n  SELECT k, 'vgv' m, cor, SUM(mx) v FROM (\n    SELECT k, cor, COALESCE(imo, CONCAT('n', x)) ik, MAX(val) mx FROM j WHERE m = 'vend' GROUP BY 1, 2, 3\n  ) GROUP BY 1, 2, 3\n),\nlin AS (\n  SELECT k, m, CONCAT(cor, '|', CAST(n AS STRING)) t FROM cnt\n  UNION ALL\n  SELECT k, m, CONCAT(cor, '|', CAST(CAST(ROUND(v) AS INT64) AS STRING)) FROM vg\n)\nSELECT k, m, STRING_AGG(t, ';' ORDER BY t) s FROM lin GROUP BY 1, 2\nUNION ALL\nSELECT k, '_per', CONCAT(CAST(a AS STRING), '|', CAST(b AS STRING)) FROM per\n";
 var SRV = "Google Cloud BigQuery";
 // Fotos dos corretores: nome exatamente como no Vista -> imagem embutida (data URI). Vazio = moldura com iniciais.
 var FOTOS = window.__poloFotos || {};
