@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24e espaçamento padrão entre blocos, agrupar por ano/mês/semana/dia -->
+<!-- v2026-10-24f participação em gráfico circular -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -172,8 +172,18 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 .empty{color:var(--ink3);padding:20px 0;text-align:center}
 
 /* ---------- participação ---------- */
-.band{display:flex;height:26px;border-radius:5px;overflow:hidden;gap:2px;margin-bottom:16px}
-.band i{display:block;height:100%;min-width:3px}
+.pz{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px 36px;align-items:center}
+.donut{position:relative;width:240px;height:240px;margin:0 auto}
+.donut svg{width:100%;height:100%;display:block;overflow:visible}
+.donut path{stroke:var(--surface);stroke-width:2;cursor:pointer;transition:opacity .15s,transform .15s;transform-origin:120px 120px}
+.donut svg.hov path{opacity:.35}.donut svg.hov path.on{opacity:1;transform:scale(1.03)}
+.donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;padding:0 52px}
+.donut .ctr b{font:600 30px/1.1 var(--display);letter-spacing:-.02em;color:var(--ink)}
+.donut .ctr span{margin-top:4px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);line-height:1.35}
+.pz .share{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px}
+@media (max-width:1100px){.pz .share{grid-template-columns:minmax(0,1fr)}}
+.pz .sh{cursor:default}.pz .sh.on{background:var(--track)}
+@media (max-width:760px){.pz{grid-template-columns:minmax(0,1fr)}.donut{width:220px;height:220px}}
 .share{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 28px}
 .sh{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:9px;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}
 .sh i{width:10px;height:10px;border-radius:2px}
@@ -827,6 +837,31 @@ function rPf(v) {
 }
 
 /* ---------- Exploração ---------- */
+// Gráfico circular (rosca): ao passar o mouse mostra dimensão, quantidade e porcentagem
+function rosca(el, segs, soma, rot, legenda) {
+  var R = 118, r = 74, c = 120, a0 = -Math.PI / 2, s = '<svg viewBox="0 0 240 240" role="img" aria-label="Participação">';
+  function pt(raio, a) { return (c + raio * Math.cos(a)).toFixed(2) + ' ' + (c + raio * Math.sin(a)).toFixed(2); }
+  segs.forEach(function (g, i) {
+    var f = g.n / soma, a1 = a0 + f * 2 * Math.PI, d;
+    if (f >= 0.9999) d = 'M' + pt(R, a0) + 'A' + R + ' ' + R + ' 0 1 1 ' + pt(R, a0 + Math.PI) + 'A' + R + ' ' + R + ' 0 1 1 ' + pt(R, a0) + 'L' + pt(r, a0) + 'A' + r + ' ' + r + ' 0 1 0 ' + pt(r, a0 + Math.PI) + 'A' + r + ' ' + r + ' 0 1 0 ' + pt(r, a0) + 'Z';
+    else { var g1 = f > 0.5 ? 1 : 0; d = 'M' + pt(R, a0) + 'A' + R + ' ' + R + ' 0 ' + g1 + ' 1 ' + pt(R, a1) + 'L' + pt(r, a1) + 'A' + r + ' ' + r + ' 0 ' + g1 + ' 0 ' + pt(r, a0) + 'Z'; }
+    s += '<path d="' + d + '" fill="' + g.c + '" data-i="' + i + '"/>';
+    a0 = a1;
+  });
+  el.innerHTML = s + '</svg><div class="ctr"><b>' + fmt.n(soma) + '</b><span>' + esc(rot) + '</span></div><div class="tip"></div>';
+  var svg = el.querySelector('svg'), tip = el.querySelector('.tip'), paths = svg.querySelectorAll('path');
+  function liga(i, ev) {
+    svg.classList.add('hov'); paths.forEach(function (p, k) { p.classList.toggle('on', k === i); });
+    legenda.forEach(function (l) { l.classList.toggle('on', +l.dataset.sg === i); });
+    var g = segs[i]; tip.innerHTML = '<b>' + esc(g.nome) + '</b> · ' + fmt.n(g.n) + ' · ' + fmt.pct(g.n / soma, 1);
+    if (ev) { var b = el.getBoundingClientRect(); tip.style.left = (ev.clientX - b.left) + 'px'; tip.style.top = (ev.clientY - b.top - 6) + 'px'; }
+    else { tip.style.left = '50%'; tip.style.top = '8px'; }
+    tip.classList.add('on');
+  }
+  function desliga() { svg.classList.remove('hov'); paths.forEach(function (p) { p.classList.remove('on'); }); legenda.forEach(function (l) { l.classList.remove('on'); }); tip.classList.remove('on'); }
+  paths.forEach(function (p) { p.onmousemove = function (ev) { liga(+p.dataset.i, ev); }; p.onmouseleave = desliga; });
+  legenda.forEach(function (l) { l.onmouseenter = function () { liga(+l.dataset.sg); }; l.onmouseleave = desliga; });
+}
 var PALS = ['var(--red)', '#7c0e15', '#e0767c', '#8d8984', '#f0b3b6', '#5e5b57', '#c9c6c1'];
 function rEx(v) {
   var f = F(), dk = ST.exd, dim = dimBy(dk), m = ST.exm;
@@ -865,9 +900,9 @@ function rEx(v) {
     '<section class="card" style="padding-block:14px"><div class="ct" style="margin:0"><h2>Analisar por</h2><div class="chips">' +
       DIMS.map(function (d) { return '<button class="pill" data-exd="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div></section>' +
     '<section class="card"><div class="ct"><h2>Participação</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7].concat(dim.semImovel ? [] : [8]), m, 'data-exm') + '</div>' +
-      (soma ? '<div class="band">' + segs.map(function (g) { return '<i style="flex:' + g.n + ';background:' + g.c + '" title="' + esc(g.nome) + ': ' + g.n + '"></i>'; }).join('') + '</div>' +
-        '<div class="share">' + sh.slice(0, 12).map(function (r, i) { return '<div class="sh"><i style="background:' + (i < 6 ? PALS[i] : PALS[6]) + '"></i><span class="nm" title="' + esc(r.nome) + '">' + esc(r.nome) + '</span><span class="n">' + fmt.n(r.c[m]) + '</span><span class="pc">' + fmt.pct(r.c[m] / soma) + '</span></div>'; }).join('') + '</div>' +
-        (sh.length > 12 ? '<p class="note">Mais ' + (sh.length - 12) + ' itens na tabela abaixo.</p>' : '')
+      (soma ? '<div class="pz"><div class="donut" id="dn"></div>' +
+        '<div class="share">' + segs.map(function (g, i) { return '<div class="sh" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></div>'; }).join('') + '</div></div>' +
+        (resto.length ? '<p class="note">“Outros” soma ' + resto.length + ' ' + (resto.length === 1 ? 'item' : 'itens') + ' menores; todos aparecem na tabela abaixo.</p>' : '')
       : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' no período.</div>') +
     '</section>' +
     '<section class="card"><div class="ct"><h2>Funil por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + ' · clique no cabeçalho para ordenar</span></div>' +
@@ -875,6 +910,7 @@ function rEx(v) {
       '<p class="note">' + (dk === 'cor' ? 'Um cliente atendido por mais de um corretor conta para cada um; o total conta uma vez.' : dk === 'vei' ? 'Imóveis não têm veículo de captação, por isso Agenciamentos fica fora desta visão.' : 'Atributos do imóvel ligado ao card (leads: o primeiro imóvel de interesse). Registros sem imóvel aparecem como “Sem informação”.') + '</p></section>';
   v.querySelectorAll('[data-exd]').forEach(function (b) { b.onclick = function () { ST.exd = b.dataset.exd; delete ST.srt.ex; if (dimBy(ST.exd).semImovel && ST.exm === 8) ST.exm = 0; render(); }; });
   v.querySelectorAll('[data-exm]').forEach(function (b) { b.onclick = function () { ST.exm = +b.dataset.exm; render(); }; });
+  if (soma) rosca($('#dn'), segs, soma, MET[m].n, v.querySelectorAll('[data-sg]'));
   ligarOrdenacao(v, 'ex', cols, render);
 }
 
