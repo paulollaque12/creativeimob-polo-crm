@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24j tabela da participação alinhada ao botão Leads -->
+<!-- v2026-10-24k primeira coluna das tabelas travada ao rolar -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -144,7 +144,7 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .rk .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 
 /* ---------- tabelas ---------- */
-.tw{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.tw{overflow-x:auto;margin:0 -4px 0 0;padding:0 4px 0 0}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:13px}
 th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
@@ -154,6 +154,13 @@ thead th:hover{color:var(--ink)}
 thead th[aria-sort]::after{content:" ↓";color:var(--red)}
 thead th[aria-sort="ascending"]::after{content:" ↑"}
 tbody tr:hover td{background:var(--track)}
+/* primeira coluna (dimensão) travada ao rolar a tabela para o lado */
+.tw th:first-child,.tw td:first-child{position:sticky;left:0;z-index:1;background:var(--surface)}
+.tw thead th:first-child{z-index:3}
+.tw tbody tr:hover td:first-child{background:var(--track)}
+.tw th:first-child::before,.tw td:first-child::before{content:"";position:absolute;top:0;bottom:0;right:-14px;width:14px;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.28),transparent);opacity:0;transition:opacity .15s}
+.tw.rolou th:first-child::before,.tw.rolou td:first-child::before{opacity:1}
+
 tfoot td{font-weight:700;border-bottom:0;border-top:1px solid var(--ink3)}
 td.cv{color:var(--ink3);font-size:12px}
 th.cv{color:var(--ink3);opacity:.8}
@@ -750,6 +757,8 @@ function render() {
   $('#fcor').closest('.fld').hidden = PG === 'cp';
   ({ ov: rOv, pf: rPf, ex: rEx, cp: rCp, fi: rFi })[PG](v);
 }
+// sombra na coluna travada quando a tabela foi rolada para o lado
+document.addEventListener('scroll', function (ev) { var t = ev.target; if (t && t.classList && t.classList.contains('tw')) t.classList.toggle('rolou', t.scrollLeft > 2); }, true);
 var rt; addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 150); });
 
 /* ---------- dados ---------- */
