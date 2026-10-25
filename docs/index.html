@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24d escuro padrão, gráficos em vermelho Polo, senha a cada abertura -->
+<!-- v2026-10-24e espaçamento padrão entre blocos, agrupar por ano/mês/semana/dia -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -89,6 +89,13 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .pill:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
 .grid{display:grid;gap:18px}
+#view{display:flex;flex-direction:column;gap:18px;min-width:0}
+#view>.note{margin:-6px 0 0}
+.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.seg button{all:unset;cursor:pointer;height:24px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:500;color:var(--ink2);display:inline-flex;align-items:center}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .g-ov{grid-template-columns:minmax(0,1.75fr) minmax(0,1fr)}
 .g-2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;min-width:0}
@@ -520,13 +527,14 @@ function porDim(C, m, d1, d2, F, dk) {
   linhas(C, m, d1, d2, F).forEach(function (e) { var k = dim.f(C, e); (g[k] = g[k] || []).push(e); });
   return Object.keys(g).map(function (k) { return { nome: k, n: distintos(g[k]), L: g[k] }; });
 }
-// Séries temporais: granularidade dia/semana/mês
+// Séries temporais: granularidade dia/semana/mês/ano
 function serie(C, m, d1, d2, F, gran, valor) {
   var L = linhas(C, m, d1, d2, F), b = {}, keys = [];
   function chave(i) {
     var o = dObj(i);
     if (gran === 'dia') return i;
     if (gran === 'sem') { var w = (o.getUTCDay() + 6) % 7; return Math.max(i - w, d1); }
+    if (gran === 'ano') return Date.UTC(o.getUTCFullYear(), 0, 1);
     return Date.UTC(o.getUTCFullYear(), o.getUTCMonth(), 1);
   }
   for (var i = d1; i <= d2; i++) { var k = chave(i); if (!b[k]) { b[k] = []; keys.push(k); } }
@@ -556,7 +564,7 @@ if (typeof module !== 'undefined') module.exports = { parseCubo: parseCubo, funi
 <script>
 var SQL = "/*polo-cubo v4 · de 2026-01-01 até D-1*/\nWITH\nd0 AS (\n  SELECT Data, CodigoCliente, EtapaAcaoId, nome_usuario, veiculocaptacao_dn, bairro_imovel, categoria_imovel, dormitorios_imovel, areaprivativa_imovel\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`\n  WHERE Data BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)\n    AND (Assunto IS NULL OR Assunto NOT IN ('Negócio ganho','Negócio perdido'))\n    AND EtapaAcaoId IN ('9','17','13','16','14','2','7')\n),\ng0 AS (\n  SELECT CodigoNegocio, MIN(Data) d, ANY_VALUE(CodigoEmImovel) imo, MAX(valornegocio_dn) val,\n    ANY_VALUE(veiculocaptacao_dn) vei, ANY_VALUE(bairro_imovel) bai, ANY_VALUE(categoria_imovel) cat,\n    ANY_VALUE(dormitorios_imovel) dor, ANY_VALUE(areaprivativa_imovel) are, ARRAY_AGG(DISTINCT IFNULL(nome_usuario,'')) cors\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_dados_polo`\n  WHERE Assunto IN ('Negócio ganho', 'Negocio Ganho via API') AND Data BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)\n  GROUP BY 1\n),\nu AS (SELECT codigo, ANY_VALUE(nome) nome FROM `vistaprocessos.nitro_dados.vista_usuarios` WHERE imobiliaria_id = 1005 GROUP BY 1),\ni0 AS (\n  SELECT codigo, ANY_VALUE(DATE(data_cadastro)) d, ANY_VALUE(tem_placa) pl, ANY_VALUE(codigo_corretor) cc,\n    ANY_VALUE(bairro) bai, ANY_VALUE(categoria) cat, ANY_VALUE(dormitorios) dor, ANY_VALUE(SAFE_CAST(area_privativa AS FLOAT64)) are\n  FROM `vistaprocessos.nitro_dados.vista_imoveis` WHERE imobiliaria_id = 1005 GROUP BY 1\n),\nbase AS (\n  SELECT DISTINCT 0 m, DATE(Data) d, CodigoCliente x, nome_usuario cor, veiculocaptacao_dn vei, bairro_imovel bai, categoria_imovel cat,\n    Dormitorios dor, CAST(ROUND(SAFE_CAST(AreaPrivativa AS FLOAT64)) AS INT64) are, CAST(NULL AS STRING) imo, CAST(NULL AS INT64) val\n  FROM `vistaprocessos.nitro_dados.vw_consolidado_clientes_capturados_polo`\n  WHERE DATE(Data) BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)\n  UNION DISTINCT\n  SELECT CASE EtapaAcaoId WHEN '9' THEN 1 WHEN '17' THEN 2 WHEN '13' THEN 3 WHEN '16' THEN 3 WHEN '14' THEN 4 WHEN '2' THEN 5 ELSE 6 END,\n    Data, CodigoCliente, nome_usuario, veiculocaptacao_dn, bairro_imovel, categoria_imovel, dormitorios_imovel,\n    CAST(ROUND(areaprivativa_imovel) AS INT64), NULL, NULL\n  FROM d0\n  UNION DISTINCT\n  SELECT 7, d, CodigoNegocio, NULLIF(c,''), vei, bai, cat, dor, CAST(ROUND(are) AS INT64), imo, CAST(ROUND(val) AS INT64)\n  FROM g0, UNNEST(cors) c\n  UNION DISTINCT\n  SELECT m, i0.d, i0.codigo, u.nome, NULL, bai, cat, dor, CAST(ROUND(are) AS INT64), NULL, NULL\n  FROM i0 LEFT JOIN u ON u.codigo = i0.cc, UNNEST(IF(LOWER(pl) = 'sim', [8, 9], [8])) m\n  WHERE i0.d BETWEEN '2026-01-01' AND DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY)\n),\nk AS (\n  SELECT 'cor' t, cor v FROM base WHERE cor IS NOT NULL GROUP BY 2 UNION ALL\n  SELECT 'vei', vei FROM base WHERE vei IS NOT NULL GROUP BY 2 UNION ALL\n  SELECT 'bai', bai FROM base WHERE bai IS NOT NULL GROUP BY 2 UNION ALL\n  SELECT 'cat', cat FROM base WHERE cat IS NOT NULL GROUP BY 2\n),\nkd AS (SELECT t, v, ROW_NUMBER() OVER (PARTITION BY t ORDER BY v) id FROM k),\nenc AS (\n  SELECT b.m, b.d,\n    CONCAT(DATE_DIFF(b.d, DATE '2025-01-01', DAY), '|', IFNULL(b.x,''), '|', IFNULL(CAST(k1.id AS STRING),''), '|', IFNULL(CAST(k2.id AS STRING),''), '|',\n      IFNULL(CAST(k3.id AS STRING),''), '|', IFNULL(CAST(k4.id AS STRING),''), '|', IFNULL(CAST(b.dor AS STRING),''), '|', IFNULL(CAST(b.are AS STRING),''), '|',\n      IFNULL(b.imo,''), '|', IFNULL(CAST(b.val AS STRING),'')) r\n  FROM base b\n  LEFT JOIN kd k1 ON k1.t = 'cor' AND k1.v = b.cor\n  LEFT JOIN kd k2 ON k2.t = 'vei' AND k2.v = b.vei\n  LEFT JOIN kd k3 ON k3.t = 'bai' AND k3.v = b.bai\n  LEFT JOIN kd k4 ON k4.t = 'cat' AND k4.v = b.cat\n)\nSELECT CONCAT('m', CAST(m AS STRING)) k, COUNT(*) n, STRING_AGG(r, ';' ORDER BY d) s FROM enc GROUP BY m\nUNION ALL\nSELECT CONCAT('k_', t), COUNT(*), STRING_AGG(v, '\\t' ORDER BY id) FROM kd GROUP BY t\nUNION ALL\nSELECT 'ref', 0, CAST(CURRENT_DATE('America/Sao_Paulo') AS STRING)\n";
 var SRV = "Google Cloud BigQuery";
-var C = null, PG = 'ov', ST = { evo: 0, pf: 0, exd: 'vei', exm: 0, fid: 'cor', srt: {} };
+var C = null, PG = 'ov', ST = { evo: 0, pf: 0, exd: 'vei', exm: 0, fid: 'cor', srt: {}, gran: null };
 var $ = function (s, r) { return (r || document).querySelector(s); };
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
@@ -655,8 +663,16 @@ function chipsMet(lista, sel, attr) {
   return '<div class="chips" role="group">' + lista.map(function (m) { return '<button class="pill" ' + attr + '="' + m + '" aria-pressed="' + (m === sel) + '">' + (m === 'vgv' ? 'VGV' : MET[m].n) + '</button>'; }).join('') + '</div>';
 }
 function granDe(d1, d2) { var n = d2 - d1 + 1; return n <= 62 ? 'dia' : n <= 200 ? 'sem' : 'mes'; }
+// Agrupamento escolhido pelo usuário (Ano, Mês, Semana, Dia); sem escolha, automático pelo tamanho do período
+var GRANS = [['ano', 'Ano'], ['mes', 'Mês'], ['sem', 'Semana'], ['dia', 'Dia']];
+function granAtual(padrao) { return ST.gran || padrao; }
+function segGran(g) {
+  return '<div class="seg" role="group" aria-label="Agrupar por">' + GRANS.map(function (x) { return '<button data-gran="' + x[0] + '" aria-pressed="' + (x[0] === g) + '">' + x[1] + '</button>'; }).join('') + '</div>';
+}
+function ligarGran(v) { v.querySelectorAll('[data-gran]').forEach(function (b) { b.onclick = function () { ST.gran = b.dataset.gran; render(); }; }); }
 var MESN = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 function rotulo(k, gran) {
+  if (gran === 'ano') return String(new Date(k).getUTCFullYear());
   if (gran === 'mes') { var o = new Date(k); return MESN[o.getUTCMonth()] + '/' + String(o.getUTCFullYear()).slice(2); }
   var d = dObj(k); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0');
 }
@@ -671,7 +687,7 @@ function barras(el, pts, opts) {
   var passo = Math.ceil(n / Math.floor(iw / 46));
   var mostraVal = n <= 31 && bw >= 18;
   pts.forEach(function (p, i) {
-    var h = nice.m ? (p.v / nice.m) * ih : 0, x = pl + i * bw + gap / 2, y = pt + ih - h, w = Math.max(1, bw - gap);
+    var w = Math.max(1, Math.min(bw - gap, 72)), h = nice.m ? (p.v / nice.m) * ih : 0, x = pl + i * bw + (bw - w) / 2, y = pt + ih - h;   // barra no máx. 72 px, centrada
     var cor = i === n - 1 && opts.realce ? 'var(--red)' : (opts.cor || 'var(--bar)');
     s += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + Math.max(h, p.v ? 1.5 : 0) + '" rx="2" fill="' + cor + '" data-i="' + i + '"/>';
     if (mostraVal && p.v) s += '<text class="vl" x="' + (x + w / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + (opts.fmtV || fmt.n)(p.v) + '</text>';
@@ -754,7 +770,7 @@ function htmlFunil(o, p, prevD1, mostraChg) {
 function rOv(v) {
   var f = F(), o = funil(C, FX.d1, FX.d2, f), pa = anterior(FX.d1, FX.d2), p = funil(C, pa[0], pa[1], f);
   var conv = o[0] ? o[7] / o[0] : 0, convp = p[0] ? p[7] / p[0] : 0, imov = FX.vei ? '<p class="note">Agenciamentos não têm veículo de captação: com esse filtro ativo eles ficam zerados.</p>' : '';
-  var gran = granDe(FX.d1, FX.d2), sel = ST.evo;
+  var gran = granAtual(granDe(FX.d1, FX.d2)), sel = ST.evo;
   v.innerHTML =
     '<div class="grid g-ov">' +
       '<section class="card"><div class="ct"><h2>Funil de conversão</h2><span class="sub">clientes únicos por etapa · % = conversão da etapa anterior</span></div>' + htmlFunil(o, p, pa[0], true) + '</section>' +
@@ -767,11 +783,12 @@ function rOv(v) {
         '<p class="note">Comparação com os ' + (FX.d2 - FX.d1 + 1) + ' dias anteriores (' + fmt.data(pa[0]) + ' a ' + fmt.data(pa[1]) + ').</p>' + imov +
       '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução</h2><span class="sub">por ' + ({ dia: 'dia', sem: 'semana', mes: 'mês' })[gran] + '</span></div>' +
+    '<section class="card"><div class="ct"><h2>Evolução</h2>' + segGran(gran) + '</div>' +
       chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 'vgv', 8, 9], sel, 'data-evo') + '<div class="chart" id="evo" style="margin-top:14px"></div></section>';
   v.querySelectorAll('[data-evo]').forEach(function (b) { b.onclick = function () { ST.evo = b.dataset.evo === 'vgv' ? 'vgv' : +b.dataset.evo; render(); }; });
+  ligarGran(v);
   var ehV = sel === 'vgv', pts = serie(C, ehV ? 7 : sel, FX.d1, FX.d2, f, gran, ehV ? 'vgv' : null).map(function (p) { return { l: rotulo(p.k, gran), v: p.v }; });
-  barras($('#evo'), pts, { label: 'Evolução', fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n, cor: sel === 7 || ehV ? 'var(--red)' : 'var(--bar)' });
+  barras($('#evo'), pts, { label: 'Evolução', fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n, cor: 'var(--bar)' });
 }
 function kv(k, v, c) { return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span>' + c + '</div>'; }
 
@@ -902,7 +919,7 @@ function rFi(v) {
   var rows = porDim(C, 7, FX.d1, FX.d2, f, dk).map(function (g) { var vv = vgv(g.L); return { nome: g.nome, n: g.n, vgv: vv, tk: g.n ? vv / g.n : 0 }; });
   var cols = { nome: { v: function (r) { return r.nome; }, tipo: 's' }, n: { v: function (r) { return r.n; } }, vgv: { v: function (r) { return r.vgv; } }, tk: { v: function (r) { return r.tk; } } };
   var s = ordenar('fi', rows, cols, { k: 'vgv', asc: false });
-  var gran = granDe(FX.d1, FX.d2), gran2 = gran === 'dia' ? 'sem' : gran;
+  var gran = granDe(FX.d1, FX.d2), gran2 = granAtual(gran === 'dia' ? 'sem' : gran);
   // negócios ganhos do período
   var neg = {}; linhas(C, 7, FX.d1, FX.d2, f).forEach(function (e) { var n = neg[e.x] = neg[e.x] || { e: e, cor: [] }; var nm = C.k.cor[e.r]; if (nm && n.cor.indexOf(nm) < 0) n.cor.push(nm); });
   var dl = Object.keys(neg).map(function (k) { return neg[k]; }).sort(function (a, b) { return b.e.d - a.e.d || b.e.val - a.e.val; });
@@ -913,7 +930,7 @@ function rFi(v) {
       '<section class="card kpi"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</section>' +
       '<section class="card kpi"><div class="lbl">Ticket médio</div><div class="big">' + (o[7] ? fmt.mi(o.ticket) : '–') + '</div>' + chg(o.ticket, p.ticket, pa[0]) + '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2><span class="sub">por ' + ({ sem: 'semana (início em segunda)', mes: 'mês' })[gran2] + '</span></div><div class="chart" id="fiv"></div></section>' +
+    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2>' + segGran(gran2) + '</div><div class="chart" id="fiv"></div></section>' +
     '<div class="grid g-2">' +
     '<section class="card"><div class="ct"><h2>VGV por</h2><div class="chips">' + DIMS.map(function (d) { return '<button class="pill" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div>' +
       '<div class="tw"><table><thead><tr>' + th('fi', 'nome', dim.n, s) + th('fi', 'n', 'Vendas', s) + th('fi', 'vgv', 'VGV', s) + th('fi', 'tk', 'Ticket médio', s) + '</tr></thead><tbody>' +
@@ -926,7 +943,8 @@ function rFi(v) {
       '</tbody></table></div>' + (Object.keys(vistosImo).length < dl.length ? '<p class="note">* Mesmo imóvel de outro negócio do período: conta como venda, mas entra uma vez no VGV.</p>' : '') + '</section></div>';
   v.querySelectorAll('[data-fid]').forEach(function (b) { b.onclick = function () { ST.fid = b.dataset.fid; delete ST.srt.fi; render(); }; });
   ligarOrdenacao(v, 'fi', cols, render);
-  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', cor: 'var(--red)', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
+  ligarGran(v);
+  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', cor: 'var(--bar)', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
 }
 
 /* ---------- render ---------- */

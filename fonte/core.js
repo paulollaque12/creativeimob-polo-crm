@@ -108,13 +108,14 @@ function porDim(C, m, d1, d2, F, dk) {
   linhas(C, m, d1, d2, F).forEach(function (e) { var k = dim.f(C, e); (g[k] = g[k] || []).push(e); });
   return Object.keys(g).map(function (k) { return { nome: k, n: distintos(g[k]), L: g[k] }; });
 }
-// Séries temporais: granularidade dia/semana/mês
+// Séries temporais: granularidade dia/semana/mês/ano
 function serie(C, m, d1, d2, F, gran, valor) {
   var L = linhas(C, m, d1, d2, F), b = {}, keys = [];
   function chave(i) {
     var o = dObj(i);
     if (gran === 'dia') return i;
     if (gran === 'sem') { var w = (o.getUTCDay() + 6) % 7; return Math.max(i - w, d1); }
+    if (gran === 'ano') return Date.UTC(o.getUTCFullYear(), 0, 1);
     return Date.UTC(o.getUTCFullYear(), o.getUTCMonth(), 1);
   }
   for (var i = d1; i <= d2; i++) { var k = chave(i); if (!b[k]) { b[k] = []; keys.push(k); } }

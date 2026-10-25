@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24d escuro padrão, gráficos em vermelho Polo, senha a cada abertura -->
+<!-- v2026-10-24e espaçamento padrão entre blocos, agrupar por ano/mês/semana/dia -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -78,6 +78,13 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .pill:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
 .grid{display:grid;gap:18px}
+#view{display:flex;flex-direction:column;gap:18px;min-width:0}
+#view>.note{margin:-6px 0 0}
+.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.seg button{all:unset;cursor:pointer;height:24px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:500;color:var(--ink2);display:inline-flex;align-items:center}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .g-ov{grid-template-columns:minmax(0,1.75fr) minmax(0,1fr)}
 .g-2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;min-width:0}
@@ -290,7 +297,7 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 <script>
 var SQL = /*@@SQL@@*/"";
 var SRV = "Google Cloud BigQuery";
-var C = null, PG = 'ov', ST = { evo: 0, pf: 0, exd: 'vei', exm: 0, fid: 'cor', srt: {} };
+var C = null, PG = 'ov', ST = { evo: 0, pf: 0, exd: 'vei', exm: 0, fid: 'cor', srt: {}, gran: null };
 var $ = function (s, r) { return (r || document).querySelector(s); };
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
@@ -389,8 +396,16 @@ function chipsMet(lista, sel, attr) {
   return '<div class="chips" role="group">' + lista.map(function (m) { return '<button class="pill" ' + attr + '="' + m + '" aria-pressed="' + (m === sel) + '">' + (m === 'vgv' ? 'VGV' : MET[m].n) + '</button>'; }).join('') + '</div>';
 }
 function granDe(d1, d2) { var n = d2 - d1 + 1; return n <= 62 ? 'dia' : n <= 200 ? 'sem' : 'mes'; }
+// Agrupamento escolhido pelo usuário (Ano, Mês, Semana, Dia); sem escolha, automático pelo tamanho do período
+var GRANS = [['ano', 'Ano'], ['mes', 'Mês'], ['sem', 'Semana'], ['dia', 'Dia']];
+function granAtual(padrao) { return ST.gran || padrao; }
+function segGran(g) {
+  return '<div class="seg" role="group" aria-label="Agrupar por">' + GRANS.map(function (x) { return '<button data-gran="' + x[0] + '" aria-pressed="' + (x[0] === g) + '">' + x[1] + '</button>'; }).join('') + '</div>';
+}
+function ligarGran(v) { v.querySelectorAll('[data-gran]').forEach(function (b) { b.onclick = function () { ST.gran = b.dataset.gran; render(); }; }); }
 var MESN = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 function rotulo(k, gran) {
+  if (gran === 'ano') return String(new Date(k).getUTCFullYear());
   if (gran === 'mes') { var o = new Date(k); return MESN[o.getUTCMonth()] + '/' + String(o.getUTCFullYear()).slice(2); }
   var d = dObj(k); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0');
 }
@@ -405,7 +420,7 @@ function barras(el, pts, opts) {
   var passo = Math.ceil(n / Math.floor(iw / 46));
   var mostraVal = n <= 31 && bw >= 18;
   pts.forEach(function (p, i) {
-    var h = nice.m ? (p.v / nice.m) * ih : 0, x = pl + i * bw + gap / 2, y = pt + ih - h, w = Math.max(1, bw - gap);
+    var w = Math.max(1, Math.min(bw - gap, 72)), h = nice.m ? (p.v / nice.m) * ih : 0, x = pl + i * bw + (bw - w) / 2, y = pt + ih - h;   // barra no máx. 72 px, centrada
     var cor = i === n - 1 && opts.realce ? 'var(--red)' : (opts.cor || 'var(--bar)');
     s += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + Math.max(h, p.v ? 1.5 : 0) + '" rx="2" fill="' + cor + '" data-i="' + i + '"/>';
     if (mostraVal && p.v) s += '<text class="vl" x="' + (x + w / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + (opts.fmtV || fmt.n)(p.v) + '</text>';
@@ -488,7 +503,7 @@ function htmlFunil(o, p, prevD1, mostraChg) {
 function rOv(v) {
   var f = F(), o = funil(C, FX.d1, FX.d2, f), pa = anterior(FX.d1, FX.d2), p = funil(C, pa[0], pa[1], f);
   var conv = o[0] ? o[7] / o[0] : 0, convp = p[0] ? p[7] / p[0] : 0, imov = FX.vei ? '<p class="note">Agenciamentos não têm veículo de captação: com esse filtro ativo eles ficam zerados.</p>' : '';
-  var gran = granDe(FX.d1, FX.d2), sel = ST.evo;
+  var gran = granAtual(granDe(FX.d1, FX.d2)), sel = ST.evo;
   v.innerHTML =
     '<div class="grid g-ov">' +
       '<section class="card"><div class="ct"><h2>Funil de conversão</h2><span class="sub">clientes únicos por etapa · % = conversão da etapa anterior</span></div>' + htmlFunil(o, p, pa[0], true) + '</section>' +
@@ -501,11 +516,12 @@ function rOv(v) {
         '<p class="note">Comparação com os ' + (FX.d2 - FX.d1 + 1) + ' dias anteriores (' + fmt.data(pa[0]) + ' a ' + fmt.data(pa[1]) + ').</p>' + imov +
       '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução</h2><span class="sub">por ' + ({ dia: 'dia', sem: 'semana', mes: 'mês' })[gran] + '</span></div>' +
+    '<section class="card"><div class="ct"><h2>Evolução</h2>' + segGran(gran) + '</div>' +
       chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 'vgv', 8, 9], sel, 'data-evo') + '<div class="chart" id="evo" style="margin-top:14px"></div></section>';
   v.querySelectorAll('[data-evo]').forEach(function (b) { b.onclick = function () { ST.evo = b.dataset.evo === 'vgv' ? 'vgv' : +b.dataset.evo; render(); }; });
+  ligarGran(v);
   var ehV = sel === 'vgv', pts = serie(C, ehV ? 7 : sel, FX.d1, FX.d2, f, gran, ehV ? 'vgv' : null).map(function (p) { return { l: rotulo(p.k, gran), v: p.v }; });
-  barras($('#evo'), pts, { label: 'Evolução', fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n, cor: sel === 7 || ehV ? 'var(--red)' : 'var(--bar)' });
+  barras($('#evo'), pts, { label: 'Evolução', fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n, cor: 'var(--bar)' });
 }
 function kv(k, v, c) { return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span>' + c + '</div>'; }
 
@@ -636,7 +652,7 @@ function rFi(v) {
   var rows = porDim(C, 7, FX.d1, FX.d2, f, dk).map(function (g) { var vv = vgv(g.L); return { nome: g.nome, n: g.n, vgv: vv, tk: g.n ? vv / g.n : 0 }; });
   var cols = { nome: { v: function (r) { return r.nome; }, tipo: 's' }, n: { v: function (r) { return r.n; } }, vgv: { v: function (r) { return r.vgv; } }, tk: { v: function (r) { return r.tk; } } };
   var s = ordenar('fi', rows, cols, { k: 'vgv', asc: false });
-  var gran = granDe(FX.d1, FX.d2), gran2 = gran === 'dia' ? 'sem' : gran;
+  var gran = granDe(FX.d1, FX.d2), gran2 = granAtual(gran === 'dia' ? 'sem' : gran);
   // negócios ganhos do período
   var neg = {}; linhas(C, 7, FX.d1, FX.d2, f).forEach(function (e) { var n = neg[e.x] = neg[e.x] || { e: e, cor: [] }; var nm = C.k.cor[e.r]; if (nm && n.cor.indexOf(nm) < 0) n.cor.push(nm); });
   var dl = Object.keys(neg).map(function (k) { return neg[k]; }).sort(function (a, b) { return b.e.d - a.e.d || b.e.val - a.e.val; });
@@ -647,7 +663,7 @@ function rFi(v) {
       '<section class="card kpi"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</section>' +
       '<section class="card kpi"><div class="lbl">Ticket médio</div><div class="big">' + (o[7] ? fmt.mi(o.ticket) : '–') + '</div>' + chg(o.ticket, p.ticket, pa[0]) + '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2><span class="sub">por ' + ({ sem: 'semana (início em segunda)', mes: 'mês' })[gran2] + '</span></div><div class="chart" id="fiv"></div></section>' +
+    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2>' + segGran(gran2) + '</div><div class="chart" id="fiv"></div></section>' +
     '<div class="grid g-2">' +
     '<section class="card"><div class="ct"><h2>VGV por</h2><div class="chips">' + DIMS.map(function (d) { return '<button class="pill" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div>' +
       '<div class="tw"><table><thead><tr>' + th('fi', 'nome', dim.n, s) + th('fi', 'n', 'Vendas', s) + th('fi', 'vgv', 'VGV', s) + th('fi', 'tk', 'Ticket médio', s) + '</tr></thead><tbody>' +
@@ -660,7 +676,8 @@ function rFi(v) {
       '</tbody></table></div>' + (Object.keys(vistosImo).length < dl.length ? '<p class="note">* Mesmo imóvel de outro negócio do período: conta como venda, mas entra uma vez no VGV.</p>' : '') + '</section></div>';
   v.querySelectorAll('[data-fid]').forEach(function (b) { b.onclick = function () { ST.fid = b.dataset.fid; delete ST.srt.fi; render(); }; });
   ligarOrdenacao(v, 'fi', cols, render);
-  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', cor: 'var(--red)', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
+  ligarGran(v);
+  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', cor: 'var(--bar)', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
 }
 
 /* ---------- render ---------- */
