@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24k primeira coluna das tabelas travada ao rolar -->
+<!-- v2026-10-24l agenciamentos sempre visível, barras centradas -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -189,9 +189,11 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 .donut .ctr b{font:600 30px/1.1 var(--display);letter-spacing:-.02em;color:var(--ink)}
 .donut .ctr span{margin-top:4px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);line-height:1.35}
 .lg{display:flex;flex-direction:column;min-width:0;width:100%}
-.lg .lh,.lg .lr{display:grid;grid-template-columns:10px minmax(0,190px) minmax(60px,1fr) 44px 48px;gap:14px;align-items:center}
+.lg .lh,.lg .lr{display:grid;grid-template-columns:10px minmax(0,1fr) 36% minmax(0,1fr);gap:16px;align-items:center}
+.lg .vv{display:flex;justify-content:flex-end;align-items:baseline}
+.lg .vv>*{width:56px;text-align:right}
 .lg .lh{padding:0 10px 8px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--line)}
-.lg .lh span:nth-child(n+4){text-align:right}
+.lg .lh .vv span{text-align:right}
 .lg .lr{height:34px;padding:0 10px;border-radius:6px;font-size:13px;cursor:default;transition:background .12s}
 .lg .lr+.lr{margin-top:2px}
 .lg .lr.on{background:var(--track)}
@@ -202,7 +204,7 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 .lg .n{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
 .lg .pc{text-align:right;color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
 .lg .lr.out .nm{color:var(--ink2)}
-@media (max-width:620px){.lg .lh,.lg .lr{grid-template-columns:10px minmax(0,1fr) 40px 44px;gap:10px}.lg .tr,.lg .lh span:nth-child(3){display:none}}
+@media (max-width:620px){.lg .lh,.lg .lr{grid-template-columns:10px minmax(0,1fr) auto;gap:10px}.lg .tr,.lg .lh>span:nth-child(3){display:none}.lg .vv>*{width:46px}}
 @media (max-width:760px){.pz{grid-template-columns:minmax(0,1fr)}.donut{width:220px;height:220px}}
 .share{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 28px}
 .sh{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:9px;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}
@@ -900,7 +902,6 @@ function rEx(v) {
     porDim(C, mm, FX.d1, FX.d2, f, dk).forEach(function (g) { var o = grupos[g.nome] = grupos[g.nome] || { nome: g.nome, c: {} }; o.c[mm] = g.n; if (mm === 7) o.vgv = vgv(g.L); });
   });
   var rows = Object.keys(grupos).map(function (k) { var o = grupos[k]; FUNIL.concat([8]).forEach(function (mm) { o.c[mm] = o.c[mm] || 0; }); o.vgv = o.vgv || 0; return o; });
-  if (ST.exm === 8 && dim.semImovel) ST.exm = m = 0;
   var tot = funil(C, FX.d1, FX.d2, f);
   // participação
   var sh = rows.filter(function (r) { return r.c[m] > 0; }).sort(function (a, b) { return b.c[m] - a.c[m]; }), soma = 0;
@@ -915,31 +916,32 @@ function rEx(v) {
   var mxL = 0; rows.forEach(function (r) { if (r.c[0] > mxL) mxL = r.c[0]; });
   var head = th('ex', 'nome', dim.n, s);
   FUNIL.forEach(function (mm, i) { if (i) head += '<th class="cv" title="Conversão da etapa anterior">→%</th>'; head += th('ex', 'm' + mm, MET[mm].n, s); });
-  head += th('ex', 'vgv', 'VGV', s) + (dim.semImovel ? '' : th('ex', 'm8', 'Agenc.', s));
+  head += th('ex', 'vgv', 'VGV', s) + th('ex', 'm8', 'Agenc.', s);
   function cel(r) {
     var h = '<td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td>';
     FUNIL.forEach(function (mm, i) {
       if (i) { var a = r.c[FUNIL[i - 1]]; h += '<td class="cv">' + (a ? fmt.pct(r.c[mm] / a) : '') + '</td>'; }
       h += '<td>' + (mm === 0 && mxL ? '<span class="bm" style="width:' + (r.c[0] / mxL * 42) + 'px"></span>' : '') + (r.c[mm] ? fmt.n(r.c[mm]) : '<span style="color:var(--ink3)">·</span>') + '</td>';
     });
-    return h + '<td>' + (r.vgv ? fmt.mi(r.vgv) : '<span style="color:var(--ink3)">·</span>') + '</td>' + (dim.semImovel ? '' : '<td>' + (r.c[8] ? fmt.n(r.c[8]) : '<span style="color:var(--ink3)">·</span>') + '</td>');
+    return h + '<td>' + (r.vgv ? fmt.mi(r.vgv) : '<span style="color:var(--ink3)">·</span>') + '</td>' + '<td>' + (dim.semImovel ? '<span style="color:var(--ink3)" title="Imóveis não têm veículo de captação">–</span>' : r.c[8] ? fmt.n(r.c[8]) : '<span style="color:var(--ink3)">·</span>') + '</td>';
   }
   var foot = '<td>Total</td>'; FUNIL.forEach(function (mm, i) { if (i) foot += '<td class="cv">' + (tot[FUNIL[i - 1]] ? fmt.pct(tot[mm] / tot[FUNIL[i - 1]]) : '') + '</td>'; foot += '<td>' + fmt.n(tot[mm]) + '</td>'; });
-  foot += '<td>' + fmt.mi(tot.vgv) + '</td>' + (dim.semImovel ? '' : '<td>' + fmt.n(tot[8]) + '</td>');
+  foot += '<td>' + fmt.mi(tot.vgv) + '</td>' + '<td>' + (dim.semImovel ? '<span style="color:var(--ink3)">–</span>' : fmt.n(tot[8])) + '</td>';
   v.innerHTML =
     '<section class="card" style="padding-block:14px"><div class="ct" style="margin:0"><h2>Analisar por</h2><div class="chips">' +
       DIMS.map(function (d) { return '<button class="pill" data-exd="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div></section>' +
-    '<section class="card"><div class="ct"><h2>Participação</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7].concat(dim.semImovel ? [] : [8]), m, 'data-exm') + '</div>' +
+    '<section class="card"><div class="ct"><h2>Participação</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 8], m, 'data-exm') + '</div>' +
       (soma ? '<div class="pz"><div class="donut" id="dn"></div>' +
-        '<div class="lg"><div class="lh"><span></span><span>' + esc(dim.n) + '</span><span></span><span>Qtd.</span><span>%</span></div>' +
-        segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></div>'; }).join('') + '</div></div>' +
+        '<div class="lg"><div class="lh"><span></span><span>' + esc(dim.n) + '</span><span></span><span class="vv"><span>Qtd.</span><span>%</span></span></div>' +
+        segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="vv"><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></span></div>'; }).join('') + '</div></div>' +
         (resto.length ? '<p class="note">“Outros” soma ' + resto.length + ' ' + (resto.length === 1 ? 'item' : 'itens') + ' menores; todos aparecem na tabela abaixo.</p>' : '')
+      : m === 8 && dim.semImovel ? '<div class="empty"><b style="font:600 30px var(--display);color:var(--ink3)">–</b><br>Agenciamentos não têm veículo de captação.</div>'
       : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' no período.</div>') +
     '</section>' +
     '<section class="card"><div class="ct"><h2>Funil por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + ' · clique no cabeçalho para ordenar</span></div>' +
       '<div class="tw"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + cel(r) + '</tr>'; }).join('') + '</tbody><tfoot><tr>' + foot + '</tr></tfoot></table></div>' +
-      '<p class="note">' + (dk === 'cor' ? 'Um cliente atendido por mais de um corretor conta para cada um; o total conta uma vez.' : dk === 'vei' ? 'Imóveis não têm veículo de captação, por isso Agenciamentos fica fora desta visão.' : 'Atributos do imóvel ligado ao card (leads: o primeiro imóvel de interesse). Registros sem imóvel aparecem como “Sem informação”.') + '</p></section>';
-  v.querySelectorAll('[data-exd]').forEach(function (b) { b.onclick = function () { ST.exd = b.dataset.exd; delete ST.srt.ex; if (dimBy(ST.exd).semImovel && ST.exm === 8) ST.exm = 0; render(); }; });
+      '<p class="note">' + (dk === 'cor' ? 'Um cliente atendido por mais de um corretor conta para cada um; o total conta uma vez.' : dk === 'vei' ? 'Imóveis não têm veículo de captação, por isso Agenciamentos aparece como “–” nesta visão.' : 'Atributos do imóvel ligado ao card (leads: o primeiro imóvel de interesse). Registros sem imóvel aparecem como “Sem informação”.') + '</p></section>';
+  v.querySelectorAll('[data-exd]').forEach(function (b) { b.onclick = function () { ST.exd = b.dataset.exd; delete ST.srt.ex; render(); }; });
   v.querySelectorAll('[data-exm]').forEach(function (b) { b.onclick = function () { ST.exm = +b.dataset.exm; render(); }; });
   if (soma) { rosca($('#dn'), segs, soma, MET[m].n, v.querySelectorAll('[data-sg]')); alinharPz(v); if (document.fonts) document.fonts.ready.then(function () { alinharPz(v); }); }
   ligarOrdenacao(v, 'ex', cols, render);
