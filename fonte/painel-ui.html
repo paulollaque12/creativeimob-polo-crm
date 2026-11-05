@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04l comparativo redesenhado: períodos A/B, resumo e funil espelhado -->
+<!-- v2026-11-04m comparativo sem o bloco Resumo -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -1084,10 +1084,7 @@ function rCp(v) {
   }
   var s =
     '<section class="card"><div class="ct"><h2>Períodos</h2></div><p class="desc">Escolha as datas e o corretor de cada lado. O filtro de veículo do topo vale para os dois.</p>' +
-      '<div class="pers">' + painel('ca', A, 'A', 'cpA') + '<span class="vs">VS</span>' + painel('cb', B, 'B', 'cpB') + '</div></section>' +
-    '<section class="card"><div class="ct"><h2>Resumo</h2><span class="sub">variação de B em relação a A</span></div><p class="desc">Os números que mais importam, lado a lado.</p><div class="kps">' +
-      kp('Leads', oa[0], ob[0], fmt.n) + kp('Vendas', oa[7], ob[7], fmt.n) + kp('VGV', oa.vgv, ob.vgv, fmt.mi) + kp('Conversão lead → venda', ca, cb, function (x) { return fmt.pct(x, 1); }) +
-    '</div></section>';
+      '<div class="pers">' + painel('ca', A, 'A', 'cpA') + '<span class="vs">VS</span>' + painel('cb', B, 'B', 'cpB') + '</div></section>';
   s += '<section class="card"><div class="ct"><h2>Funil comparado</h2></div><p class="desc">Cada etapa espelhada: o período A cresce para a esquerda e o B para a direita, na mesma escala. No centro, a variação de B em relação a A; abaixo de cada número, a conversão da etapa anterior (↓ %).</p>' +
     '<div class="bfl"><div class="bh"><span class="a cpA">Período A<span class="dt"> · ' + faixa(A) + '</span><i></i></span><span class="m">Etapa · variação</span><span class="b cpB"><i></i>Período B<span class="dt"> · ' + faixa(B) + '</span></span></div>';
   FUNIL.forEach(function (m, i) {
