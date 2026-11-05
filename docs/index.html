@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04b ícone i no funil, resultado do período com mais métricas -->
+<!-- v2026-11-04c evolução no modelo Gralha: métricas à direita, barras/linha, hover com faixa e guia -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -19,7 +19,7 @@
 /* Layout: barra lateral em tinta preta (o quadrante do logo) + área de leitura clara; o funil é a peça central. */
 :root{
   --paper:#f3f3f1; --surface:#ffffff; --ink:#151515; --ink2:#5e5b57; --ink3:#8d8984; --line:#e3e1dd; --track:#eeece9;
-  --red:#ad111b; --red2:#c8323a; --redsoft:#f6e3e3; --bar:#b0121c; --barsoft:#e8c3c5;
+  --red:#ad111b; --red2:#c8323a; --redsoft:#f6e3e3; --bar:#b0121c; --bar2:#7a0c13; --barsoft:#e8c3c5; --hv:rgba(21,21,21,.05);
   --side:#121212; --side2:#1c1c1d; --sidefg:#ecebe8; --sidemut:#8f8b86;
   --up:#2b7a4b; --down:#b4601a; --upbg:#e3f1e8; --downbg:#f8ebdf;
   --display:Sora,system-ui,sans-serif;
@@ -28,12 +28,12 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#0e0e0f; --surface:#171718; --ink:#efedea; --ink2:#a6a29c; --ink3:#77736e; --line:#29292b; --track:#212123;
-  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#cf2530; --barsoft:#5c1d21;
+  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#cf2530; --bar2:#7d1219; --barsoft:#5c1d21; --hv:rgba(255,255,255,.045);
   --side:#08080a; --side2:#141416; --sidefg:#ecebe8; --sidemut:#85817c;
   --up:#4cc27f; --down:#e8964d; --upbg:#15291e; --downbg:#2e1f12; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#0e0e0f; --surface:#171718; --ink:#efedea; --ink2:#a6a29c; --ink3:#77736e; --line:#29292b; --track:#212123;
-  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#cf2530; --barsoft:#5c1d21;
+  --red:#e2353e; --red2:#f05a61; --redsoft:#3a1416; --bar:#cf2530; --bar2:#7d1219; --barsoft:#5c1d21; --hv:rgba(255,255,255,.045);
   --side:#08080a; --side2:#141416; --sidefg:#ecebe8; --sidemut:#85817c;
   --up:#4cc27f; --down:#e8964d; --upbg:#15291e; --downbg:#2e1f12; color-scheme:dark}
 *{box-sizing:border-box}
@@ -156,6 +156,27 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .chart .vl{fill:var(--ink2);font-size:11px;font-weight:600}
 .chart .grid line{stroke:var(--line)}
 .tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:12px;padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%);opacity:0;transition:opacity .1s}
+.chart .grid line{stroke-dasharray:3 4}
+.chart .hb{fill:var(--hv);opacity:0;transition:opacity .1s}.chart .hg{stroke:var(--ink3);stroke-width:1.2;stroke-dasharray:4 4;opacity:0;transition:opacity .1s}
+.chart svg.hov .hb,.chart svg.hov .hg{opacity:1}
+.chart .br{transition:filter .12s}.chart .br.on{filter:brightness(1.18)}
+.chart .pt{fill:var(--surface);stroke:var(--bar);stroke-width:2;transition:r .12s}.chart .pt.on{r:5.5}
+.chart .ax.on{fill:var(--ink);font-weight:600}
+.ctip{position:absolute;z-index:5;pointer-events:none;transform:translate(-50%,-100%);padding:8px 12px;border-radius:10px;background:var(--ink);color:var(--paper);font-size:12px;line-height:1.35;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);opacity:0;transition:opacity .1s}
+.ctip.on{opacity:1}.ctip.el{transform:translate(-14px,-100%)}.ctip.er{transform:translate(calc(-100% + 14px),-100%)}
+.ctip small{display:block;font-size:11px;opacity:.7;margin-bottom:2px}.ctip b{font:600 16px var(--display)}.ctip span{opacity:.75}
+/* Evolução: gráfico à esquerda, métricas em lista à direita (modelo Gralha) */
+.evo{display:grid;grid-template-columns:minmax(0,1fr) 196px;gap:8px 28px;align-items:start}
+.evo .cap{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--ink2)}
+.mlist{display:flex;flex-direction:column;gap:6px}
+.mlist .lb{font-size:11.5px;color:var(--ink3);margin:0 0 2px}
+.mlist button{all:unset;cursor:pointer;height:34px;border-radius:8px;border:1px solid var(--line);text-align:center;font-size:12.5px;font-weight:600;color:var(--ink2);transition:background .12s,color .12s,border-color .12s}
+.mlist button:hover{color:var(--ink);border-color:var(--ink3)}
+.mlist button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.mlist button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.ctl2{display:flex;align-items:center;gap:10px}
+.seg.ic button{padding:0 9px}.seg.ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;display:block}
+@media (max-width:900px){.evo{grid-template-columns:minmax(0,1fr)}.mlist{flex-direction:row;flex-wrap:wrap;order:-1}.mlist .lb{display:none}.mlist button{padding:0 12px}}
 .tip.on{opacity:1}
 
 /* ---------- ranking ---------- */
@@ -711,11 +732,19 @@ function chipsMet(lista, sel, attr) {
 }
 function granDe(d1, d2) { var n = d2 - d1 + 1; return n <= 62 ? 'dia' : n <= 200 ? 'sem' : 'mes'; }
 // Agrupamento escolhido pelo usuário (Ano, Mês, Semana, Dia); sem escolha, automático pelo tamanho do período
-var GRANS = [['ano', 'Ano'], ['mes', 'Mês'], ['sem', 'Semana'], ['dia', 'Dia']];
+var GRANS = [['dia', 'Dia'], ['sem', 'Semana'], ['mes', 'Mês'], ['ano', 'Ano']];
 function granAtual(padrao) { return ST.gran || padrao; }
 function segGran(g) {
   return '<div class="seg" role="group" aria-label="Agrupar por">' + GRANS.map(function (x) { return '<button data-gran="' + x[0] + '" aria-pressed="' + (x[0] === g) + '">' + x[1] + '</button>'; }).join('') + '</div>';
 }
+// Barras ou linha (lembra a escolha neste navegador)
+try { ST.tipo = localStorage.getItem('polo-evo') === 'linha' ? 'linha' : 'barras'; } catch (e) { ST.tipo = 'barras'; }
+function segTipo() {
+  return '<div class="seg ic" role="group" aria-label="Tipo de gráfico">' +
+    '<button data-tipo="barras" aria-pressed="' + (ST.tipo !== 'linha') + '" title="Barras" aria-label="Barras"><svg viewBox="0 0 24 24"><path d="M6 20V11M12 20V5M18 20v-6"/></svg></button>' +
+    '<button data-tipo="linha" aria-pressed="' + (ST.tipo === 'linha') + '" title="Linha" aria-label="Linha"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/></svg></button></div>';
+}
+function ligarTipo(v) { v.querySelectorAll('[data-tipo]').forEach(function (b) { b.onclick = function () { ST.tipo = b.dataset.tipo; try { localStorage.setItem('polo-evo', ST.tipo); } catch (e) {} render(); }; }); }
 function ligarGran(v) { v.querySelectorAll('[data-gran]').forEach(function (b) { b.onclick = function () { ST.gran = b.dataset.gran; render(); }; }); }
 var MESN = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 function rotulo(k, gran) {
@@ -723,33 +752,56 @@ function rotulo(k, gran) {
   if (gran === 'mes') { var o = new Date(k); return MESN[o.getUTCMonth()] + '/' + String(o.getUTCFullYear()).slice(2); }
   var d = dObj(k); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0');
 }
-// Gráfico de barras verticais em SVG
+var DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'], MESL = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+function rotuloLongo(k, gran) {
+  if (gran === 'ano') return String(new Date(k).getUTCFullYear());
+  if (gran === 'mes') { var o = new Date(k); return MESL[o.getUTCMonth()] + ' de ' + o.getUTCFullYear(); }
+  var d = dObj(k), dd = String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + '/' + d.getUTCFullYear();
+  return gran === 'sem' ? 'Semana de ' + dd : DIAS[d.getUTCDay()] + ', ' + dd;
+}
+// Gráfico de evolução em SVG: barras (padrão) ou linha (opts.tipo === 'linha').
+// Ao passar o mouse: faixa na coluna, linha-guia tracejada e cartão com período, valor e métrica (padrão da Gralha).
+var GID = 0;
 function barras(el, pts, opts) {
-  var W = Math.max(280, el.clientWidth || 600), H = opts.h || 230, pl = 40, pr = 6, pt = 18, pb = 26;
+  var W = Math.max(280, el.clientWidth || 600), H = opts.h || 260, pl = 40, pr = 8, pt = 22, pb = 28;
   var max = 0; pts.forEach(function (p) { if (p.v > max) max = p.v; });
-  var nice = escala(max), iw = W - pl - pr, ih = H - pt - pb, n = pts.length, bw = iw / n, gap = Math.min(6, bw * .28);
-  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(opts.label || '') + '"><g class="grid">';
-  nice.t.forEach(function (t) { var y = pt + ih - (t / nice.m) * ih; s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (pl - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + (opts.fmtAx || fmt.n)(t) + '</text>'; });
-  s += '</g>';
-  var passo = Math.ceil(n / Math.floor(iw / 46));
-  var mostraVal = n <= 31 && bw >= 18;
+  var nice = escala(max), iw = W - pl - pr, ih = H - pt - pb, n = pts.length, bw = iw / n, gap = Math.min(8, bw * .3), ln = opts.tipo === 'linha', id = 'g' + (++GID);
+  function Y(v) { return pt + ih - (nice.m ? v / nice.m * ih : 0); }
+  function CX(i) { return pl + i * bw + bw / 2; }
+  var fv = opts.fmtV || fmt.n;
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(opts.label || '') + '">' +
+    '<defs><linearGradient id="' + id + 'b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--bar)"/><stop offset="1" stop-color="var(--bar2)"/></linearGradient>' +
+    '<linearGradient id="' + id + 'a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--bar)" stop-opacity=".28"/><stop offset="1" stop-color="var(--bar)" stop-opacity="0"/></linearGradient></defs><g class="grid">';
+  nice.t.forEach(function (t) { s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/><text x="' + (pl - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + (opts.fmtAx || fmt.n)(t) + '</text>'; });
+  s += '</g><rect class="hb" x="0" y="' + (pt - 10) + '" width="' + bw + '" height="' + (ih + 10) + '" rx="6"/><line class="hg" x1="0" x2="0" y1="' + (pt - 10) + '" y2="' + (pt + ih) + '"/>';
+  var passo = Math.ceil(n / Math.max(1, Math.floor(iw / 52))), mostraVal = ln ? n <= 16 : (n <= 31 && bw >= 18);
+  if (ln && n) {
+    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ');
+    s += '<path d="' + d + ' L' + CX(n - 1).toFixed(1) + ' ' + (pt + ih) + ' L' + CX(0).toFixed(1) + ' ' + (pt + ih) + 'Z" fill="url(#' + id + 'a)"/>';
+    s += '<path d="' + d + '" fill="none" stroke="var(--bar)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
+  }
   pts.forEach(function (p, i) {
-    var w = Math.max(1, Math.min(bw - gap, 72)), h = nice.m ? (p.v / nice.m) * ih : 0, x = pl + i * bw + (bw - w) / 2, y = pt + ih - h;   // barra no máx. 72 px, centrada
-    var cor = i === n - 1 && opts.realce ? 'var(--red)' : (opts.cor || 'var(--bar)');
-    s += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + Math.max(h, p.v ? 1.5 : 0) + '" rx="2" fill="' + cor + '" data-i="' + i + '"/>';
-    if (mostraVal && p.v) s += '<text class="vl" x="' + (x + w / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + (opts.fmtV || fmt.n)(p.v) + '</text>';
-    if (i % passo === 0) s += '<text x="' + (x + w / 2) + '" y="' + (H - 7) + '" text-anchor="middle">' + esc(p.l) + '</text>';
+    if (ln) s += '<circle class="pt" data-i="' + i + '" cx="' + CX(i) + '" cy="' + Y(p.v) + '" r="' + (n > 40 ? 2.2 : 3.6) + '"/>';
+    else { var w = Math.max(1, Math.min(bw - gap, 64)), h = Y(0) - Y(p.v); s += '<rect class="br" data-i="' + i + '" x="' + (CX(i) - w / 2) + '" y="' + Y(p.v) + '" width="' + w + '" height="' + Math.max(h, p.v ? 1.5 : 0) + '" rx="' + Math.min(4, w / 4) + '" fill="url(#' + id + 'b)"/>'; }
+    if (mostraVal && p.v) s += '<text class="vl" x="' + CX(i) + '" y="' + (Y(p.v) - (ln ? 10 : 6)) + '" text-anchor="middle">' + fv(p.v) + '</text>';
+    if (i % passo === 0) s += '<text class="ax" data-i="' + i + '" x="' + CX(i) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(p.l) + '</text>';
   });
-  s += '<rect x="' + pl + '" y="' + pt + '" width="' + iw + '" height="' + ih + '" fill="transparent" class="hit"/></svg><div class="tip"></div>';
+  s += '<rect x="' + pl + '" y="0" width="' + iw + '" height="' + H + '" fill="transparent"/></svg><div class="ctip"></div>';
   el.innerHTML = s;
-  var tip = el.querySelector('.tip'), svg = el.querySelector('svg');
-  svg.onmousemove = function (ev) {
-    var r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, i = Math.floor((x - pl) / bw);
-    if (i < 0 || i >= n) { tip.classList.remove('on'); return; }
-    var p = pts[i]; tip.innerHTML = '<b>' + esc(p.t || p.l) + '</b> · ' + (opts.fmtV || fmt.n)(p.v);
-    tip.style.left = ((pl + i * bw + bw / 2) * r.width / W) + 'px'; tip.style.top = ((pt + ih - (nice.m ? p.v / nice.m * ih : 0)) * r.height / H) + 'px'; tip.classList.add('on');
-  };
-  svg.onmouseleave = function () { tip.classList.remove('on'); };
+  var tip = el.querySelector('.ctip'), svg = el.querySelector('svg'), hb = svg.querySelector('.hb'), hg = svg.querySelector('.hg'), at = -1;
+  function liga(i) {
+    if (i === at) return; at = i;
+    var p = pts[i], r = svg.getBoundingClientRect(), k = r.width / W;
+    hb.setAttribute('x', pl + i * bw); hb.setAttribute('width', bw); hg.setAttribute('x1', CX(i)); hg.setAttribute('x2', CX(i));
+    svg.classList.add('hov'); svg.querySelectorAll('[data-i]').forEach(function (e) { e.classList.toggle('on', +e.dataset.i === i); });
+    tip.innerHTML = '<small>' + esc(p.t || p.l) + '</small><b>' + fv(p.v) + '</b> <span>' + esc(opts.un || '') + '</span>';
+    var x = CX(i) * k, w = el.clientWidth;
+    tip.classList.toggle('el', x < 90); tip.classList.toggle('er', x > w - 90);
+    tip.style.left = x + 'px'; tip.style.top = Math.max(0, (Y(p.v) - 14) * k) + 'px'; tip.classList.add('on');
+  }
+  function desliga() { at = -1; svg.classList.remove('hov'); svg.querySelectorAll('.on').forEach(function (e) { e.classList.remove('on'); }); tip.classList.remove('on'); }
+  svg.onmousemove = function (ev) { var r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, i = Math.floor((x - pl) / bw); if (i < 0 || i >= n) desliga(); else liga(i); };
+  svg.onmouseleave = desliga;
 }
 function escala(max) {
   if (max <= 0) return { m: 1, t: [0, 1] };
@@ -847,12 +899,13 @@ function rOv(v) {
         '<p class="note">Comparação com os ' + (FX.d2 - FX.d1 + 1) + ' dias anteriores (' + fmt.data(pa[0]) + ' a ' + fmt.data(pa[1]) + ').</p>' + imov +
       '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução</h2>' + segGran(gran) + '</div>' +
-      chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 'vgv', 8, 9], sel, 'data-evo') + '<div class="chart" id="evo" style="margin-top:14px"></div></section>';
+    '<section class="card"><div class="ct"><h2>Evolução</h2><div class="ctl2">' + segTipo() + segGran(gran) + '</div></div>' +
+      '<div class="evo"><div><p class="cap">' + (sel === 'vgv' ? 'VGV' : MET[sel].n) + ' · ' + (sel === 'vgv' ? 'R$ por ' : sel >= 8 ? 'imóveis por ' : 'clientes únicos por ') + ({ dia: 'dia', sem: 'semana', mes: 'mês', ano: 'ano' })[gran] + '</p><div class="chart" id="evo"></div></div>' +
+      '<div class="mlist" role="group" aria-label="Métrica"><p class="lb">Métricas</p>' + [0, 1, 2, 3, 4, 5, 6, 7, 'vgv', 8, 9].map(function (m) { return '<button data-evo="' + m + '" aria-pressed="' + (m === sel) + '">' + (m === 'vgv' ? 'VGV' : MET[m].n) + '</button>'; }).join('') + '</div></div></section>';
   v.querySelectorAll('[data-evo]').forEach(function (b) { b.onclick = function () { ST.evo = b.dataset.evo === 'vgv' ? 'vgv' : +b.dataset.evo; render(); }; });
-  ligarGran(v);
-  var ehV = sel === 'vgv', pts = serie(C, ehV ? 7 : sel, FX.d1, FX.d2, f, gran, ehV ? 'vgv' : null).map(function (p) { return { l: rotulo(p.k, gran), v: p.v }; });
-  barras($('#evo'), pts, { label: 'Evolução', fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n, cor: 'var(--bar)' });
+  ligarGran(v); ligarTipo(v);
+  var ehV = sel === 'vgv', pts = serie(C, ehV ? 7 : sel, FX.d1, FX.d2, f, gran, ehV ? 'vgv' : null).map(function (p) { return { l: rotulo(p.k, gran), t: rotuloLongo(p.k, gran), v: p.v }; });
+  barras($('#evo'), pts, { label: 'Evolução', tipo: ST.tipo, h: $('#evo').clientWidth < 600 ? 280 : 440, un: ehV ? 'de VGV' : MET[sel].n.toLowerCase(), fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n });
 }
 function kv(k, v, c) { return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span>' + c + '</div>'; }
 
@@ -1031,7 +1084,7 @@ function rFi(v) {
       '<section class="card kpi"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</section>' +
       '<section class="card kpi"><div class="lbl">Ticket médio</div><div class="big">' + (o[7] ? fmt.mi(o.ticket) : '–') + '</div>' + chg(o.ticket, p.ticket, pa[0]) + '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2>' + segGran(gran2) + '</div><div class="chart" id="fiv"></div></section>' +
+    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2><div class="ctl2">' + segTipo() + segGran(gran2) + '</div></div><div class="chart" id="fiv"></div></section>' +
     '<div class="grid g-2">' +
     '<section class="card"><div class="ct"><h2>VGV por</h2><div class="chips">' + DIMS.map(function (d) { return '<button class="pill" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div>' +
       '<div class="tw"><table><thead><tr>' + th('fi', 'nome', dim.n, s) + th('fi', 'n', 'Vendas', s) + th('fi', 'vgv', 'VGV', s) + th('fi', 'tk', 'Ticket médio', s) + '</tr></thead><tbody>' +
@@ -1044,8 +1097,8 @@ function rFi(v) {
       '</tbody></table></div>' + (Object.keys(vistosImo).length < dl.length ? '<p class="note">* Mesmo imóvel de outro negócio do período: conta como venda, mas entra uma vez no VGV.</p>' : '') + '</section></div>';
   v.querySelectorAll('[data-fid]').forEach(function (b) { b.onclick = function () { ST.fid = b.dataset.fid; delete ST.srt.fi; render(); }; });
   ligarOrdenacao(v, 'fi', cols, render);
-  ligarGran(v);
-  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', cor: 'var(--bar)', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
+  ligarGran(v); ligarTipo(v);
+  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), t: rotuloLongo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', tipo: ST.tipo, un: 'de VGV', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
 }
 
 /* ---------- render ---------- */
