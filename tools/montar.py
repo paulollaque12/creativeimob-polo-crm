@@ -6,7 +6,7 @@ Gera:
   dist/ranking-tv-artefato.html  -> ranking ao vivo (artefato do claude.ai, consulta o BigQuery pelo conector)
   dist/painel-artefato.html      -> Dashboard Polo ao vivo (artefato do claude.ai)
   docs/index.html                -> Dashboard Polo estático (GitHub Pages, publicado), lê docs/data.enc.json
-  ranking/index.html             -> ranking da TV estático, FORA do site (guardado para depois), lê ranking/data.enc.json
+  docs/ranking/index.html        -> ranking da TV estático (polo.creativeimob.app/ranking), lê docs/ranking/data.enc.json
 """
 import json
 import pathlib
@@ -27,13 +27,13 @@ ICONES = ('<link rel="icon" href="favicon.ico?v=1" sizes="any">\n'
           '<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">\n')
 
 
-def estatica(corpo, extra_js, destino):
+def estatica(corpo, extra_js, destino, base=''):
     """Documento completo: o leitor do arquivo cifrado entra antes dos scripts da página."""
     i = corpo.index('<script>\n')
     corpo = corpo[:i] + '<script>\n' + extra_js + '\n</script>\n' + corpo[i:]
     pagina = ('<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
               '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-              '<meta name="robots" content="noindex,nofollow">\n' + ICONES + '</head>\n<body>\n' + corpo + '\n</body>\n</html>\n')
+              '<meta name="robots" content="noindex,nofollow">\n' + ICONES.replace('href="', 'href="' + base) + '</head>\n<body>\n' + corpo + '\n</body>\n</html>\n')
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text(pagina)
     print('ok:', destino.relative_to(R), len(pagina), 'bytes')
@@ -52,9 +52,8 @@ estatica(painel, (R / 'fonte/estatico-painel.js').read_text() + '\n' + leitor, R
 (R / 'docs/painel').mkdir(parents=True, exist_ok=True)
 (R / 'docs/painel/index.html').write_text('<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex">'
                                           '<meta http-equiv="refresh" content="0; url=../"><title>Dashboard Polo</title><a href="../">Dashboard Polo</a>\n')
-# Ranking da TV: fora do site por enquanto (para publicar de novo, gerar em docs/ranking/).
-# Demonstração: fotos ilustrativas (remover quando houver as fotos reais)
-estatica(tv, leitor + '\n' + (R / 'fonte/fotos-exemplo.js').read_text(), R / 'ranking/index.html')
+# Ranking da TV (Pódio, gira Leads/Visitas/Vendas): publicado em polo.creativeimob.app/ranking, com fotos reais do Vista
+estatica(tv, leitor, R / 'docs/ranking/index.html', '../')
 
 (R / 'docs/.nojekyll').write_text('')
 (R / 'docs/robots.txt').write_text('User-agent: *\nDisallow: /\n')

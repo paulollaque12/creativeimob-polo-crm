@@ -1,7 +1,7 @@
 """Cifra o resultado de uma consulta para o site.
 
   DASH_SENHA='...' python3 tools/cifrar.py --painel resultado.json     # Dashboard Polo -> docs/data.enc.json (site publicado)
-  DASH_SENHA='...' python3 tools/cifrar.py resultado.json              # ranking da TV  -> ranking/data.enc.json (fora do site)
+  DASH_SENHA='...' python3 tools/cifrar.py resultado.json              # ranking da TV  -> docs/ranking/data.enc.json (polo.creativeimob.app/ranking)
 
 `resultado.json` pode ser o retorno do conector do BigQuery ({"rows":[{"f":[{"v":..}]}]})
 ou uma lista simples [[...], ...]. Ranking: sql/ranking-tv.sql. Painel: sql/painel-cubo.sql.
@@ -69,12 +69,17 @@ if painel:
                 sys.exit('queda de linhas em %s: %d -> %d (mais de 2%%). Nada foi gravado.' % (m, a, b))
         print('comparado com o publicado: ' + ' · '.join('%s %s->%s' % (m, velho.get(m, [0, '-'])[1], chaves.get(m, [0, '-'])[1]) for m in ['m0', 'm3', 'm7', 'm8']))
 else:
+    rows = [r for r in rows if r[0] != 'zz']   # linha de enchimento que só serve para o conector salvar em arquivo
     periodos = {r[0]: r[2] for r in rows if r[1] == '_per'}
     assert {'ano', 'mes', 'mes_ant', 'sem', 'sem_ant'} <= set(periodos), 'faltam os períodos: a consulta é a sql/ranking-tv.sql?'
     assert any(r[1] != '_per' for r in rows), 'consulta sem nenhuma métrica'
     ultimo = periodos['ano'].split('|')[1]
-    resumo = '%d linhas' % len(rows)
-    destino = R / 'ranking/data.enc.json'
+    hoje = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3))).date()
+    assert ultimo == (hoje - datetime.timedelta(days=1)).isoformat(), 'ranking até %s, esperado ontem (%s): resultado antigo?' % (ultimo, hoje - datetime.timedelta(days=1))
+    fotos = sum(1 for r in rows if r[0] == '_foto')
+    mes = {r[1]: r[2] for r in rows if r[0] == 'mes'}
+    resumo = '%d linhas · %d fotos · mês: %s' % (len(rows), fotos, ' '.join('%s=%d' % (m, len([t for t in (mes.get(m) or '').split(';') if t and not t.startswith('*|')])) for m in ('leads', 'vis', 'vend')))
+    destino = R / 'docs/ranking/data.enc.json'
 
 dados = {'gerado': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'), 'rows': rows}
 claro = json.dumps(dados, ensure_ascii=False, separators=(',', ':')).encode()

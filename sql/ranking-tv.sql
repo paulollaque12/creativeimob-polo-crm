@@ -1,4 +1,4 @@
-/*polo-tv v2*/
+/*polo-tv v3 · TV: rankings + fotos do Vista; a última linha (zz) só faz o conector salvar o resultado em arquivo e é descartada pelo cifrar.py*/
 WITH
 p AS (SELECT DATE_SUB(CURRENT_DATE('America/Sao_Paulo'), INTERVAL 1 DAY) L),
 per AS (
@@ -52,3 +52,8 @@ lin AS (
 SELECT k, m, STRING_AGG(t, ';' ORDER BY t) s FROM lin GROUP BY 1, 2
 UNION ALL
 SELECT k, '_per', CONCAT(CAST(a AS STRING), '|', CAST(b AS STRING)) FROM per
+UNION ALL
+SELECT '_foto', nome, ANY_VALUE(foto) FROM `vistaprocessos.nitro_dados.vista_usuarios`
+WHERE imobiliaria_id = 1005 AND foto IS NOT NULL AND foto != '' AND nome IS NOT NULL GROUP BY nome
+UNION ALL
+SELECT 'zz', '_pad', REPEAT('x', 300000)

@@ -9,21 +9,19 @@ Painéis da Polo Residencial alimentados pelo Vista CRM no BigQuery (`vistaproce
 - **Dados:** de **01/01/2026 até D-1**. `sql/painel-cubo.sql` → `tools/cifrar.py --painel` (confere antes de gravar) → `docs/data.enc.json` (AES-GCM, sem compressão para funcionar em navegadores antigos, ~291 KB). Atualização diária às 06:37 pela tarefa agendada "Atualizar Dashboard Polo" (passo a passo em `ATUALIZAR.md`). Todo o cálculo é feito no navegador por `fonte/core.js`. Comparação com período anterior que caia antes de 2026 aparece como "sem base".
 - **Regras:** vendas = `Negócio ganho` + `Negocio Ganho via API`; Proposta = etapa 7, como no DAX do cliente.
 
-## Ranking de corretores para a TV (fora do site, para depois)
+## Ranking de corretores para a TV
 
-- Guardado em `ranking/` (não é publicado: o GitHub Pages só serve `docs/`). Para voltar a publicar, gerar em `docs/ranking/` no `tools/montar.py`.
-
-- **Página:** `ranking/index.html` lê `ranking/data.enc.json`, cifrado com AES-GCM (chave PBKDF2-SHA256, 250 mil iterações), com a mesma senha do painel. A senha **nunca** vai para o repositório.
-- **Teste de layout:** barra no topo com Opção 1 (Pódio), 2 (Placar), 3 (Torre) e 4 (Destaque); em cada uma, métrica (Leads, Atendimento, Agendamento, Visitas, Vendas, VGV, Agenciamentos) e período (Anual, Mensal, Semanal). Mensal e semanal comparam com o mesmo nº de dias do período anterior (setas ▲ ▼, "=" e "NOVO"); o anual não compara. Taças ouro, prata e bronze no top 3.
-- **Tela:** palco 1920×1080 que se ajusta a qualquer TV, sem rolagem; botão "Tela cheia" esconde a barra. Recarrega os dados a cada 30 minutos.
-- **Dados:** `sql/ranking-tv.sql` devolve os rankings já agregados (~4 KB) para os períodos `ano`, `mes`, `mes_ant`, `sem`, `sem_ant`, sempre até D-1. Ficam fora usuários "(Excluído)", "Administrativo" e "Creative".
-- **Atualização:** manual, pelo `ATUALIZAR.md` (a rotina diária só atualiza o painel).
+- **Endereço:** https://polo.creativeimob.app/ranking (mesma senha do dashboard; na TV a senha fica salva no aparelho).
+- **Layout:** Opção 1, Pódio Noir (escolhida pelo cliente): top 3 em pódio com taças ouro/prata/bronze, do 4º ao 10º em lista à direita, setas de posição e diferença vs. os mesmos dias do mês anterior.
+- **Sem filtros:** gira sozinho entre **Leads → Visitas → Vendas a cada 60 s** (pedido do cliente em 04/11/2026), sempre no **mês atual até ontem**. Palco 1920×1080 que se ajusta a qualquer TV, sem rolagem; duplo clique ou tecla F = tela cheia; o cursor some depois de 3 s parado. Recarrega os dados a cada 30 min.
+- **Fotos:** as reais do Vista (`vista_usuarios.foto`, vêm nos dados como linhas `_foto`); sem foto, mostra as iniciais.
+- **Dados:** `sql/ranking-tv.sql` → `tools/cifrar.py` → `docs/ranking/data.enc.json`, na mesma rotina diária das 06:37.
 
 ## Arquivos
 
 | Caminho | O que é |
 |---|---|
-| `fonte/ranking-tv-ui.html` | Interface do ranking (marcadores `/*@@CORE@@*/` e `/*@@SQL@@*/""`) |
+| `fonte/ranking-tv-ui.html` | Interface do ranking da TV (Pódio, rotação de métricas) |
 | `fonte/estatico.js` | Leitor do arquivo cifrado (Web Crypto), comum às duas páginas |
 | `fonte/estatico-painel.js` | Tela de senha do Dashboard Polo (tela cheia, estilo da marca) |
 | `fonte/painel-ui.html` | Interface do Dashboard Polo (5 abas) |
@@ -31,10 +29,9 @@ Painéis da Polo Residencial alimentados pelo Vista CRM no BigQuery (`vistaproce
 | `sql/ranking-tv.sql` | Consulta agregada do ranking |
 | `sql/painel-cubo.sql` | Cubo do Dashboard Polo, de 01/01/2026 até D-1 (~225 KB de resultado) |
 | `skill/SKILL.md` | Cópia da skill `dashboard-vista-polo` (contexto completo do projeto) |
-| `tools/montar.py` | Gera `docs/index.html` (painel), `ranking/index.html` e as versões de artefato em `dist/` |
-| `tools/cifrar.py` | Cifra o cubo em `docs/data.enc.json` (`--painel`) ou o ranking em `ranking/data.enc.json` (`DASH_SENHA` no ambiente) |
-| `docs/` | O que o GitHub Pages publica (só o Dashboard Polo) |
-| `ranking/` | Ranking da TV, fora do site |
+| `tools/montar.py` | Gera `docs/index.html` (painel), `docs/ranking/index.html` (TV) e as versões de artefato em `dist/` |
+| `tools/cifrar.py` | Confere e cifra o cubo em `docs/data.enc.json` (`--painel`) ou o ranking em `docs/ranking/data.enc.json` (`DASH_SENHA` no ambiente) |
+| `docs/` | O que o GitHub Pages publica: Dashboard Polo na raiz e ranking em `ranking/` |
 
 ## Publicar no GitHub Pages
 
