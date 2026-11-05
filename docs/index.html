@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04h ranking sem barra de rolagem horizontal -->
+<!-- v2026-11-04i tabela de performance compacta, centralizada, semanas futuras esmaecidas -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -224,6 +224,13 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 
 /* ---------- ranking ---------- */
 .rank{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.tw.alta{max-height:430px;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.tw.alta::-webkit-scrollbar{width:6px;height:6px}.tw.alta::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}.tw.alta::-webkit-scrollbar-track{background:transparent}
+.tw.alta tfoot td{position:sticky;bottom:0;background:var(--surface);z-index:1;border-top:0;box-shadow:inset 0 1px 0 var(--ink3)}
+.tw.alta thead th{z-index:2;box-shadow:inset 0 -1px 0 var(--line)}
+.tw.alta tfoot td:first-child{z-index:2}
+#tpf th:not(:first-child),#tpf td:not(:first-child){text-align:center}
+#tpf .fu{opacity:.4}
 .rank::-webkit-scrollbar{width:6px;height:0}.rank::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}.rank::-webkit-scrollbar-track{background:transparent}
 .rk{display:grid;grid-template-columns:22px minmax(0,130px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px}
 .rk .p{color:var(--ink3);font-variant-numeric:tabular-nums;font-size:12px}
@@ -1083,10 +1090,10 @@ function rPf(v) {
         '<div class="lgd"><span><i></i>' + MESL[+p[1] - 1] + '</span><span><i class="ant"></i>' + MESL[(+p[1] + 10) % 12] + ' (mês anterior)</span></div><div class="chart" id="pfl"></div></section>' +
     '</div>' +
     '<section class="card"><div class="ct"><h2>Tabela de performance</h2><span class="sub">' + MET[m].n + ' por corretor e semana</span></div>' +
-      '<p class="desc">O detalhe por corretor e por semana. Clique no cabeçalho para ordenar.</p><div class="tw"><table id="tpf"><thead><tr>' +
-      th('pf', 'nome', 'Corretor', s) + sem.map(function (w, i) { return th('pf', 'w' + i, 'W' + (i + 1) + ' <span style="font-weight:500;letter-spacing:0;text-transform:none">' + rotulo(w[0], 'dia') + '</span>', s); }).join('') + th('pf', 'tot', 'Total', s) +
-      '</tr></thead><tbody>' + (rows.length ? rows.map(function (r) { return '<tr><td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td>' + r.w.map(function (x) { return '<td>' + (x ? fmt.n(x) : '<span style="color:var(--ink3)">·</span>') + '</td>'; }).join('') + '<td><b>' + fmt.n(r.tot) + '</b></td></tr>'; }).join('') : '<tr><td colspan="' + (sem.length + 2) + '" class="empty">Sem registros.</td></tr>') +
-      '</tbody><tfoot><tr><td>Total</td>' + tot.map(function (x) { return '<td>' + fmt.n(x) + '</td>'; }).join('') + '<td>' + fmt.n(distintos(L)) + '</td></tr></tfoot></table></div>' +
+      '<p class="desc">O detalhe por corretor e por semana. Clique no cabeçalho para ordenar.</p><div class="tw alta"><table id="tpf"><thead><tr>' +
+      th('pf', 'nome', 'Corretor', s) + sem.map(function (w, i) { return th('pf', 'w' + i, 'W' + (i + 1) + ' <span style="font-weight:500;letter-spacing:0;text-transform:none">' + rotulo(w[0], 'dia') + '</span>', s, w[0] > hoje - 1 ? 'fu' : ''); }).join('') + th('pf', 'tot', 'Total', s) +
+      '</tr></thead><tbody>' + (rows.length ? rows.map(function (r) { return '<tr><td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td>' + r.w.map(function (x, i) { return '<td' + (sem[i][0] > hoje - 1 ? ' class="fu"' : '') + '>' + (x ? fmt.n(x) : '<span style="color:var(--ink3)">·</span>') + '</td>'; }).join('') + '<td><b>' + fmt.n(r.tot) + '</b></td></tr>'; }).join('') : '<tr><td colspan="' + (sem.length + 2) + '" class="empty">Sem registros.</td></tr>') +
+      '</tbody><tfoot><tr><td>Total</td>' + tot.map(function (x, i) { return '<td' + (sem[i][0] > hoje - 1 ? ' class="fu">–' : '>' + fmt.n(x)) + '</td>'; }).join('') + '<td>' + fmt.n(distintos(L)) + '</td></tr></tfoot></table></div>' +
       '<p class="note">O total conta cada cliente uma vez; um cliente atendido por dois corretores aparece na linha de cada um.</p></section>';
   v.querySelectorAll('[data-pf]').forEach(function (b) { b.onclick = function () { ST.pf = +b.dataset.pf; render(); }; });
   ligarOrdenacao(v, 'pf', cols, render);
