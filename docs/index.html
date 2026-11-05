@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04d evolução: texto explicativo, sem Placas/Ano, suavizar 7d/14d na linha -->
+<!-- v2026-11-04e suavizar: curva contínua sem pontos -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -161,6 +161,7 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .chart svg.hov .hb,.chart svg.hov .hg{opacity:1}
 .chart .br{transition:filter .12s}.chart .br.on{filter:brightness(1.18)}
 .chart .pt{fill:var(--surface);stroke:var(--bar);stroke-width:2;transition:r .12s}.chart .pt.on{r:5.5}
+.chart .pt.so{opacity:0;transition:opacity .1s}.chart .pt.so.on{opacity:1}
 .chart .ax.on{fill:var(--ink);font-weight:600}
 .ctip{position:absolute;z-index:5;pointer-events:none;transform:translate(-50%,-100%);padding:8px 12px;border-radius:10px;background:var(--ink);color:var(--paper);font-size:12px;line-height:1.35;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);opacity:0;transition:opacity .1s}
 .ctip.on{opacity:1}.ctip.el{transform:translate(-14px,-100%)}.ctip.er{transform:translate(calc(-100% + 14px),-100%)}
@@ -795,6 +796,20 @@ function rotuloLongo(k, gran) {
 // Gráfico de evolução em SVG: barras (padrão) ou linha (opts.tipo === 'linha').
 // Ao passar o mouse: faixa na coluna, linha-guia tracejada e cartão com período, valor e métrica (padrão da Gralha).
 var GID = 0;
+// Curva suave que passa pelos pontos sem "estourar" além deles (interpolação monotônica, Fritsch–Carlson)
+function curva(P) {
+  var n = P.length; if (n < 3) return P.map(function (q, i) { return (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' ');
+  var dx = [], dy = [], m = [], t = [];
+  for (var i = 0; i < n - 1; i++) { dx[i] = P[i + 1][0] - P[i][0]; dy[i] = P[i + 1][1] - P[i][1]; m[i] = dy[i] / dx[i]; }
+  t[0] = m[0]; t[n - 1] = m[n - 2];
+  for (i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : 3 * (dx[i - 1] + dx[i]) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]);
+  var d = 'M' + P[0][0].toFixed(1) + ' ' + P[0][1].toFixed(1);
+  for (i = 0; i < n - 1; i++) {
+    var h = dx[i] / 3;
+    d += ' C' + (P[i][0] + h).toFixed(1) + ' ' + (P[i][1] + t[i] * h).toFixed(1) + ' ' + (P[i + 1][0] - h).toFixed(1) + ' ' + (P[i + 1][1] - t[i + 1] * h).toFixed(1) + ' ' + P[i + 1][0].toFixed(1) + ' ' + P[i + 1][1].toFixed(1);
+  }
+  return d;
+}
 function barras(el, pts, opts) {
   var W = Math.max(280, el.clientWidth || 600), H = opts.h || 260, pl = 40, pr = 8, pt = 22, pb = 28;
   var max = 0; pts.forEach(function (p) { if (p.v > max) max = p.v; });
@@ -813,12 +828,12 @@ function barras(el, pts, opts) {
   if (S) mostraVal = false;
   if (S && n) s += '<path class="bruta" d="' + pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ') + '"/>';
   if (ln && n) {
-    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(VV(i)).toFixed(1); }).join(' ');
+    var d = S ? curva(pts.map(function (p, i) { return [CX(i), Y(VV(i))]; })) : pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(VV(i)).toFixed(1); }).join(' ');
     s += '<path d="' + d + ' L' + CX(n - 1).toFixed(1) + ' ' + (pt + ih) + ' L' + CX(0).toFixed(1) + ' ' + (pt + ih) + 'Z" fill="url(#' + id + 'a)"/>';
-    s += '<path d="' + d + '" fill="none" stroke="var(--bar)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path d="' + d + '" fill="none" stroke="var(--bar)" stroke-width="' + (S ? 2.8 : 2.2) + '" stroke-linejoin="round" stroke-linecap="round"/>';
   }
   pts.forEach(function (p, i) {
-    if (ln) s += '<circle class="pt" data-i="' + i + '" cx="' + CX(i) + '" cy="' + Y(VV(i)) + '" r="' + (S ? 2.4 : n > 40 ? 2.2 : 3.6) + '"/>';
+    if (ln) s += '<circle class="pt' + (S ? ' so' : '') + '" data-i="' + i + '" cx="' + CX(i) + '" cy="' + Y(VV(i)) + '" r="' + (S ? 4.5 : n > 40 ? 2.2 : 3.6) + '"/>';
     else { var w = Math.max(1, Math.min(bw - gap, 64)), h = Y(0) - Y(p.v); s += '<rect class="br" data-i="' + i + '" x="' + (CX(i) - w / 2) + '" y="' + Y(p.v) + '" width="' + w + '" height="' + Math.max(h, p.v ? 1.5 : 0) + '" rx="' + Math.min(4, w / 4) + '" fill="url(#' + id + 'b)"/>'; }
     if (mostraVal && p.v) s += '<text class="vl" x="' + CX(i) + '" y="' + (Y(p.v) - (ln ? 10 : 6)) + '" text-anchor="middle">' + fv(p.v) + '</text>';
     if (i % passo === 0) s += '<text class="ax" data-i="' + i + '" x="' + CX(i) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(p.l) + '</text>';
