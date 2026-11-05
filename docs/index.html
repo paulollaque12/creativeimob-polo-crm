@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04n financeiro redesenhado: KPIs com ícone, evolução com métricas à direita, tabelas padronizadas com fotos -->
+<!-- v2026-11-04o financeiro: VGV por e Negócios ganhos com altura fixa -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -465,6 +465,10 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 #tdl .vl2{font-weight:600}
 #tdl .im{color:var(--ink2)}#tdl .im small{display:block;color:var(--ink3);font-size:11px}
 .g-fi{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+.g-fi>section{height:640px;display:flex;flex-direction:column}
+.g-fi .tw.alta{flex:1;min-height:0;max-height:none}
+.g-fi .note{margin-top:12px}
+@media (max-width:1180px){.g-fi>section{height:auto}.g-fi .tw.alta{flex:none;max-height:430px}}
 @media (max-width:1180px){.fks{grid-template-columns:repeat(2,minmax(0,1fr))}.g-fi{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:620px){.fks{grid-template-columns:minmax(0,1fr)}}
 
