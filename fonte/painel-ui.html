@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04e suavizar: curva contínua sem pontos -->
+<!-- v2026-11-04f performance: trilho de métricas, evolução semanal com mês anterior e semanas por vir, textos introdutórios -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -153,12 +153,45 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .chart .pt.so{opacity:0;transition:opacity .1s}.chart .pt.so.on{opacity:1}
 .chart .ax.on{fill:var(--ink);font-weight:600}
 .ctip{position:absolute;z-index:5;pointer-events:none;transform:translate(-50%,-100%);padding:8px 12px;border-radius:10px;background:var(--ink);color:var(--paper);font-size:12px;line-height:1.35;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);opacity:0;transition:opacity .1s}
-.ctip.on{opacity:1}.ctip.el{transform:translate(-14px,-100%)}.ctip.er{transform:translate(calc(-100% + 14px),-100%)}
+.ctip.on{opacity:1}.ctip{transform:translate(0,-100%)}
 .ctip small{display:block;font-size:11px;opacity:.7;margin-bottom:2px}.ctip b{font:600 16px var(--display)}.ctip span{opacity:.75}
 /* Evolução: gráfico à esquerda, métricas em lista à direita (modelo Gralha) */
 .evo{display:grid;grid-template-columns:minmax(0,1fr) 196px;gap:8px 28px;align-items:start}
 .evo .cap{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--ink2)}
 .desc{margin:0 0 16px;font-size:12.5px;color:var(--ink3);line-height:1.5}
+.ct + .desc{margin-top:-8px}
+/* Performance: trilho de métricas (funil numerado + imóveis) */
+.mrail{display:grid;grid-template-columns:repeat(8,minmax(0,1fr)) 18px repeat(2,minmax(0,1.3fr));gap:6px;align-items:stretch;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.mrail::-webkit-scrollbar{display:none}
+.mrail .gl{grid-row:1;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:0 2px 6px;display:flex;align-items:center;gap:8px}
+.mrail .gl::after{content:"";flex:1;height:1px;background:var(--line)}
+.mt{all:unset;box-sizing:border-box;cursor:pointer;grid-row:2;position:relative;display:flex;flex-direction:column;gap:6px;min-width:0;padding:11px 10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);transition:border-color .15s,background .15s,transform .15s}
+.mt:hover{border-color:var(--ink3);transform:translateY(-1px)}
+.mt .st{font:600 10px/1 var(--display);letter-spacing:.08em;color:var(--ink3)}
+.mt .nm{font-size:11.5px;letter-spacing:-.02em;font-weight:600;color:var(--ink2);line-height:1.25;min-height:2.5em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:normal;overflow-wrap:normal}
+.mt .vl{font:600 22px/1 var(--display);color:var(--ink);font-variant-numeric:tabular-nums lining-nums}
+.mt::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:2px;border-radius:2px;background:var(--red);transform:scaleX(0);transition:transform .2s}
+.mt[aria-pressed="true"]{border-color:var(--red);background:linear-gradient(180deg,rgba(176,18,28,.14),rgba(176,18,28,.03))}
+.mt[aria-pressed="true"]::after{transform:scaleX(1)}
+.mt[aria-pressed="true"] .st{color:var(--red)}.mt[aria-pressed="true"] .nm{color:var(--ink)}
+.mt:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.mt .ar{position:absolute;right:-6px;top:50%;width:6px;height:1px;background:var(--line)}
+/* Performance: evolução semanal com mês anterior e semanas ainda por vir */
+.pfc{display:flex;flex-direction:column}
+.pfc .chart{flex:1;min-height:240px}
+.lgd{display:flex;gap:16px;align-items:center;font-size:11.5px;color:var(--ink3);margin:0 0 6px}
+.lgd i{display:inline-block;width:18px;height:0;border-top:2.4px solid var(--bar);vertical-align:middle;margin-right:6px}
+.lgd i.ant{border-top:1.6px dashed var(--ink3)}
+.chart .fut{fill:var(--hv)}
+.chart .futl{fill:var(--ink3);font-size:10.5px;letter-spacing:.1em}
+.chart .div{stroke:var(--ink3);stroke-width:1;stroke-dasharray:3 4}
+.chart .ant{fill:none;stroke:var(--ink3);stroke-width:1.6;stroke-dasharray:5 4;opacity:.8}
+.chart .pa{fill:var(--surface);stroke:var(--ink3);stroke-width:1.5}
+.chart .pt.parc{fill:var(--bar)}
+.chart .ax.fu{opacity:.5}
+.ctip .ln2{display:block;margin-top:4px;font-size:11.5px;opacity:.82}
+.ctip .up{color:#4cc27f}.ctip .dn{color:#e8964d}
+@media (max-width:1320px){.mrail{grid-template-columns:repeat(8,minmax(98px,1fr)) 12px repeat(2,minmax(124px,1fr))}}
 /* Suavizar (só no gráfico de linha por dia): botão discreto dentro do gráfico */
 .suav{position:absolute;top:0;right:0;z-index:4;display:flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
 .suav button{all:unset;cursor:pointer;height:24px;padding:0 10px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--ink3);display:inline-flex;align-items:center;gap:6px;transition:background .12s,color .12s}
@@ -579,9 +612,8 @@ function barras(el, pts, opts) {
     hb.setAttribute('x', pl + i * bw); hb.setAttribute('width', bw); hg.setAttribute('x1', CX(i)); hg.setAttribute('x2', CX(i));
     svg.classList.add('hov'); svg.querySelectorAll('[data-i]').forEach(function (e) { e.classList.toggle('on', +e.dataset.i === i); });
     tip.innerHTML = '<small>' + esc(p.t || p.l) + '</small>' + (S ? '<b>' + (opts.fmtS || fv)(S[i]) + '</b> <span>média de ' + opts.nSuave + ' dias</span><small style="margin:3px 0 0">no dia: ' + fv(p.v) + ' ' + esc(opts.un || '') + '</small>' : '<b>' + fv(p.v) + '</b> <span>' + esc(opts.un || '') + '</span>');
-    var x = CX(i) * k, w = el.clientWidth;
-    tip.classList.toggle('el', x < 90); tip.classList.toggle('er', x > w - 90);
-    tip.style.left = x + 'px'; tip.style.top = Math.max(0, (Y(VV(i)) - 14) * k) + 'px'; tip.classList.add('on');
+    var x = CX(i) * k, tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(x - tw / 2, el.clientWidth - tw)) + 'px'; tip.style.top = Math.max(0, (Y(VV(i)) - 14) * k) + 'px'; tip.classList.add('on');
   }
   function desliga() { at = -1; svg.classList.remove('hov'); svg.querySelectorAll('.on').forEach(function (e) { e.classList.remove('on'); }); tip.classList.remove('on'); }
   svg.onmousemove = function (ev) { var r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, i = Math.floor((x - pl) / bw); if (i < 0 || i >= n) desliga(); else liga(i); };
@@ -593,6 +625,46 @@ function escala(max) {
   if (max < 4) st = 1;
   var m = Math.ceil(max / st) * st, t = []; for (var v = 0; v <= m + 1e-9; v += st) t.push(v);
   return { m: m, t: t };
+}
+// Evolução semanal da Performance: linha do mês (até a semana atual), mês anterior tracejado para comparar,
+// semanas que ainda não chegaram em faixa clara com divisória; hover com faixa, guia e cartão.
+function semanal(el, cur, ant, ate, nomes, tipHtml, H) {
+  var W = Math.max(280, el.clientWidth || 500), pl = 36, pr = 22, pt = 26, pb = 28, iw = W - pl - pr, ih = H - pt - pb, n = cur.length;
+  var max = 0; cur.forEach(function (v, i) { if (i <= ate && v > max) max = v; }); ant.forEach(function (v) { if (v != null && v > max) max = v; });
+  var nice = escala(max), bw = iw / n;
+  function X(i) { return pl + bw * i + bw / 2; } function Y(v) { return pt + ih - (nice.m ? v / nice.m * ih : 0); }
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Evolução semanal"><defs><linearGradient id="pfa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--bar)" stop-opacity=".26"/><stop offset="1" stop-color="var(--bar)" stop-opacity="0"/></linearGradient></defs><g class="grid">';
+  nice.t.forEach(function (t) { s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/><text x="' + (pl - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + fmt.n(t) + '</text>'; });
+  s += '</g>';
+  if (ate < n - 1) { var xf = pl + bw * (ate + 1); s += '<rect class="fut" x="' + xf + '" y="' + (pt - 14) + '" width="' + (W - pr - xf) + '" height="' + (ih + 14) + '" rx="6"/><line class="div" x1="' + xf + '" x2="' + xf + '" y1="' + (pt - 14) + '" y2="' + (pt + ih) + '"/><text class="futl" x="' + (xf + (W - pr - xf) / 2) + '" y="' + (pt + ih - 10) + '" text-anchor="middle">AINDA POR VIR</text>'; }
+  s += '<rect class="hb" x="0" y="' + (pt - 14) + '" width="' + bw + '" height="' + (ih + 14) + '" rx="6"/><line class="hg" x1="0" x2="0" y1="' + (pt - 14) + '" y2="' + (pt + ih) + '"/>';
+  var pa = []; ant.forEach(function (v, i) { if (v != null) pa.push([X(i), Y(v)]); });
+  if (pa.length > 1) s += '<path class="ant" d="' + curva(pa) + '"/>';
+  ant.forEach(function (v, i) { if (v != null) s += '<circle class="pa" cx="' + X(i) + '" cy="' + Y(v) + '" r="2.6"/>'; });
+  var pc = []; for (var i = 0; i <= ate; i++) pc.push([X(i), Y(cur[i])]);
+  if (pc.length) {
+    var d = curva(pc);
+    if (pc.length > 1) s += '<path d="' + d + ' L' + pc[pc.length - 1][0] + ' ' + (pt + ih) + ' L' + pc[0][0] + ' ' + (pt + ih) + 'Z" fill="url(#pfa)"/>';
+    s += '<path d="' + d + '" fill="none" stroke="var(--bar)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>';
+  }
+  for (i = 0; i < n; i++) {
+    if (i <= ate) s += '<circle class="pt" data-i="' + i + '" cx="' + X(i) + '" cy="' + Y(cur[i]) + '" r="4"/><text class="vl" x="' + X(i) + '" y="' + (Y(cur[i]) - 11) + '" text-anchor="middle">' + fmt.n(cur[i]) + '</text>';
+    s += '<text class="ax' + (i > ate ? ' fu' : '') + '" data-i="' + i + '" x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(nomes[i]) + '</text>';
+  }
+  s += '<rect x="' + pl + '" y="0" width="' + iw + '" height="' + H + '" fill="transparent"/></svg><div class="ctip"></div>';
+  el.innerHTML = s;
+  var tip = el.querySelector('.ctip'), svg = el.querySelector('svg'), hb = svg.querySelector('.hb'), hg = svg.querySelector('.hg'), at = -1;
+  function liga(i) {
+    if (i === at) return; at = i;
+    var k = svg.getBoundingClientRect().width / W, x = X(i) * k, yv = i <= ate ? cur[i] : (ant[i] != null ? ant[i] : 0);
+    hb.setAttribute('x', pl + bw * i); hb.setAttribute('width', bw); hg.setAttribute('x1', X(i)); hg.setAttribute('x2', X(i));
+    svg.classList.add('hov'); svg.querySelectorAll('[data-i]').forEach(function (e) { e.classList.toggle('on', +e.dataset.i === i); });
+    tip.innerHTML = tipHtml(i);
+    var tw = tip.offsetWidth; tip.style.left = Math.max(0, Math.min(x - tw / 2, el.clientWidth - tw)) + 'px'; tip.style.top = Math.max(0, (Y(yv) - 16) * k) + 'px'; tip.classList.add('on');
+  }
+  function desliga() { at = -1; svg.classList.remove('hov'); svg.querySelectorAll('.on').forEach(function (e) { e.classList.remove('on'); }); tip.classList.remove('on'); }
+  svg.onmousemove = function (ev) { var r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, i = Math.floor((x - pl) / bw); if (i < 0 || i >= n) desliga(); else liga(i); };
+  svg.onmouseleave = desliga;
 }
 // Gráfico de linha para a evolução semanal
 function linha(el, pts) {
@@ -671,7 +743,7 @@ function rOv(v) {
   v.innerHTML =
     '<div class="grid g-ov">' +
       '<section class="card"><div class="ct"><h2>Funil de conversão' + INFO_FUNIL + '</h2></div>' + htmlFunil(o, p, pa[0], true) + '</section>' +
-      '<section class="card res"><div class="ct"><h2>Resultado do período</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' +
+      '<section class="card res"><div class="ct"><h2>Resultado do período</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' + '<p class="desc">O que o funil gerou em vendas, valor e captação de imóveis.</p>' +
         '<div class="hero"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</div>' +
         '<div class="kvs">' +
         kv('Vendas', fmt.n(o[7]), chg(o[7], p[7], pa[0])) +
@@ -714,21 +786,47 @@ function rPf(v) {
   sem.forEach(function (w, i) { cols['w' + i] = { v: function (r) { return r.w[i]; } }; });
   var s = ordenar('pf', rows, cols, { k: 'tot', asc: false });
   v.innerHTML =
-    '<section class="card" style="padding-block:14px"><div class="ct" style="margin:0"><h2>Métrica</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], m, 'data-pf') + '</div></section>' +
+    '<section class="card"><div class="ct"><h2>Métrica</h2><span class="sub">' + MESL[+p[1] - 1].charAt(0).toUpperCase() + MESL[+p[1] - 1].slice(1) + ' de ' + p[0] + (hoje - 1 < sem[sem.length - 1][1] ? ' · até ' + fmt.data(hoje - 1).slice(0, 5) : '') + '</span></div>' +
+      '<p class="desc">Escolha a etapa do funil ou a métrica de imóveis. O ranking, a evolução semanal e a tabela abaixo mudam juntos; o número em cada cartão é o total do mês.</p>' +
+      '<div class="mrail" role="group" aria-label="Métrica"><span class="gl" style="grid-column:1 / span 8">Funil</span><span class="gl" style="grid-column:10 / span 2">Imóveis</span>' +
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (k, i) { return '<button class="mt" data-pf="' + k + '" aria-pressed="' + (k === m) + '" style="grid-column:' + (k < 8 ? k + 1 : k + 2) + '"><span class="st">' + (k < 8 ? String(k + 1).padStart(2, '0') : k === 8 ? 'AG' : 'PL') + '</span><span class="nm">' + MET[k].n + '</span><span class="vl">' + fmt.n(medida(C, k, d1, d2, f)) + '</span>' + (k < 7 ? '<span class="ar" aria-hidden="true"></span>' : '') + '</button>'; }).join('') + '</div></section>' +
     '<div class="grid g-2">' +
       '<section class="card"><div class="ct"><h2>Ranking de corretores</h2><span class="sub">' + MET[m].n + ' no mês</span></div>' +
+        '<p class="desc">Quem mais gerou ' + MET[m].n.toLowerCase() + ' no mês, do maior para o menor.</p>' +
         (rk.length ? '<div class="rank">' + rk.map(function (r, i) { return '<div class="rk"><span class="p">' + (i + 1) + '</span><span class="nm" title="' + esc(r.nome) + '">' + esc(r.nome) + '</span><span class="tr"><i style="width:' + (mx ? r.tot / mx * 100 : 0) + '%"></i></span><span class="n">' + fmt.n(r.tot) + '</span></div>'; }).join('') + '</div>' : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' neste mês.</div>') +
       '</section>' +
-      '<section class="card"><div class="ct"><h2>Evolução semanal</h2><span class="sub">semanas de segunda a domingo dentro do mês</span></div><div class="chart" id="pfl"></div></section>' +
+      '<section class="card pfc"><div class="ct"><h2>Evolução semanal</h2><span class="sub">W = semana de segunda a domingo</span></div>' +
+        '<p class="desc">Semana a semana do mês, comparada com a mesma semana do mês anterior. Passe o mouse para ver a diferença e o acumulado.</p>' +
+        '<div class="lgd"><span><i></i>' + MESL[+p[1] - 1] + '</span><span><i class="ant"></i>' + MESL[(+p[1] + 10) % 12] + ' (mês anterior)</span></div><div class="chart" id="pfl"></div></section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Tabela de performance</h2><span class="sub">' + MET[m].n + ' por corretor e semana</span></div><div class="tw"><table id="tpf"><thead><tr>' +
+    '<section class="card"><div class="ct"><h2>Tabela de performance</h2><span class="sub">' + MET[m].n + ' por corretor e semana</span></div>' +
+      '<p class="desc">O detalhe por corretor e por semana. Clique no cabeçalho para ordenar.</p><div class="tw"><table id="tpf"><thead><tr>' +
       th('pf', 'nome', 'Corretor', s) + sem.map(function (w, i) { return th('pf', 'w' + i, 'W' + (i + 1) + ' <span style="font-weight:500;letter-spacing:0;text-transform:none">' + rotulo(w[0], 'dia') + '</span>', s); }).join('') + th('pf', 'tot', 'Total', s) +
       '</tr></thead><tbody>' + (rows.length ? rows.map(function (r) { return '<tr><td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td>' + r.w.map(function (x) { return '<td>' + (x ? fmt.n(x) : '<span style="color:var(--ink3)">·</span>') + '</td>'; }).join('') + '<td><b>' + fmt.n(r.tot) + '</b></td></tr>'; }).join('') : '<tr><td colspan="' + (sem.length + 2) + '" class="empty">Sem registros.</td></tr>') +
       '</tbody><tfoot><tr><td>Total</td>' + tot.map(function (x) { return '<td>' + fmt.n(x) + '</td>'; }).join('') + '<td>' + fmt.n(distintos(L)) + '</td></tr></tfoot></table></div>' +
       '<p class="note">O total conta cada cliente uma vez; um cliente atendido por dois corretores aparece na linha de cada um.</p></section>';
   v.querySelectorAll('[data-pf]').forEach(function (b) { b.onclick = function () { ST.pf = +b.dataset.pf; render(); }; });
   ligarOrdenacao(v, 'pf', cols, render);
-  linha($('#pfl'), tot.map(function (x, i) { return { l: 'W' + (i + 1), v: x }; }));
+  // mês anterior, semana a semana (mesmo índice W), e acumulados para o cartão
+  var py = +p[1] === 1 ? +p[0] - 1 : +p[0], pm = +p[1] === 1 ? 12 : +p[1] - 1, semA = semanasMes(py, pm), pd1 = semA[0][0], pd2 = semA[semA.length - 1][1];
+  var LA = linhas(C, m, pd1, pd2, f), ultimo = hoje - 1;
+  var ant = sem.map(function (w, i) { var a = semA[i]; return a ? distintos(LA.filter(function (e) { return e.d >= a[0] && e.d <= a[1]; })) : null; });
+  var ate = -1; sem.forEach(function (w, i) { if (w[0] <= ultimo) ate = i; });
+  var mN = MET[m].n.toLowerCase(), mesA = MESL[pm - 1];
+  function acum(L0, a, b) { return distintos(L0.filter(function (e) { return e.d >= a && e.d <= b; })); }
+  function dd(i) { return rotulo(i, 'dia'); }
+  function var_(a, b) { if (!b) return ''; var x = (a - b) / b; return ' <b class="' + (x >= 0 ? 'up' : 'dn') + '" style="font:600 11.5px var(--body)">' + (x >= 0 ? '+' : '') + fmt.pct(x) + '</b>'; }
+  function tipPf(i) {
+    var w = sem[i], fimW = Math.min(w[1], ultimo), parcial = w[1] > ultimo && i <= ate, h = '<small>W' + (i + 1) + ' · ' + dd(w[0]) + ' a ' + dd(w[1]) + (parcial ? ' · parcial, até ' + dd(ultimo) : '') + '</small>';
+    if (i > ate) return h + '<b>—</b> <span>semana ainda por vir</span>' + (ant[i] != null ? '<span class="ln2">' + mesA + ' (W' + (i + 1) + '): ' + fmt.n(ant[i]) + ' ' + mN + '</span>' : '');
+    h += '<b>' + fmt.n(tot[i]) + '</b> <span>' + mN + '</span>';
+    if (ant[i] != null) h += '<span class="ln2">' + mesA + ' (W' + (i + 1) + '): ' + fmt.n(ant[i]) + var_(tot[i], ant[i]) + '</span>';
+    var ac = acum(L, d1, fimW), off = fimW - d1, acA = acum(LA, pd1, Math.min(pd1 + off, pd2));
+    h += '<span class="ln2">Acumulado até ' + dd(fimW) + ': ' + fmt.n(ac) + ' · ' + mesA + ' nos mesmos ' + (off + 1) + ' dias: ' + fmt.n(acA) + var_(ac, acA) + '</span>';
+    return h;
+  }
+  var card = $('#pfl').closest('.card'), alt = card.clientHeight - ($('#pfl').getBoundingClientRect().top - card.getBoundingClientRect().top) - 22;
+  semanal($('#pfl'), tot, ant, ate, sem.map(function (w, i) { return 'W' + (i + 1); }), tipPf, Math.max(240, Math.round(alt)));
 }
 
 /* ---------- Exploração ---------- */
@@ -803,7 +901,7 @@ function rEx(v) {
   v.innerHTML =
     '<section class="card" style="padding-block:14px"><div class="ct" style="margin:0"><h2>Analisar por</h2><div class="chips">' +
       DIMS.map(function (d) { return '<button class="pill" data-exd="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div></section>' +
-    '<section class="card"><div class="ct"><h2>Participação</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 8], m, 'data-exm') + '</div>' +
+    '<section class="card"><div class="ct"><h2>Participação</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 8], m, 'data-exm') + '</div>' + '<p class="desc">Quanto cada ' + (dk === 'cor' ? 'corretor' : dim.n.toLowerCase()) + ' representa no total da métrica escolhida. Passe o mouse no gráfico ou na tabela.</p>' +
       (soma ? '<div class="pz"><div class="donut" id="dn"></div>' +
         '<div class="lg"><div class="lh"><span></span><span>' + esc(dim.n) + '</span><span></span><span class="vv"><span>Qtd.</span><span>%</span></span></div>' +
         segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="vv"><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></span></div>'; }).join('') + '</div></div>' +
@@ -811,7 +909,7 @@ function rEx(v) {
       : m === 8 && dim.semImovel ? '<div class="empty"><b style="font:600 30px var(--display);color:var(--ink3)">–</b><br>Agenciamentos não têm veículo de captação.</div>'
       : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' no período.</div>') +
     '</section>' +
-    '<section class="card"><div class="ct"><h2>Funil por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + ' · clique no cabeçalho para ordenar</span></div>' +
+    '<section class="card"><div class="ct"><h2>Funil por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' + '<p class="desc">O funil completo de cada linha, com a conversão entre as etapas, o VGV e os agenciamentos. Clique no cabeçalho para ordenar.</p>' +
       '<div class="tw"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + cel(r) + '</tr>'; }).join('') + '</tbody><tfoot><tr>' + foot + '</tr></tfoot></table></div>' +
       '<p class="note">' + (dk === 'cor' ? 'Um cliente atendido por mais de um corretor conta para cada um; o total conta uma vez.' : dk === 'vei' ? 'Imóveis não têm veículo de captação, por isso Agenciamentos aparece como “–” nesta visão.' : 'Atributos do imóvel ligado ao card (leads: o primeiro imóvel de interesse). Registros sem imóvel aparecem como “Sem informação”.') + '</p></section>';
   v.querySelectorAll('[data-exd]').forEach(function (b) { b.onclick = function () { ST.exd = b.dataset.exd; delete ST.srt.ex; render(); }; });
@@ -831,7 +929,7 @@ function rCp(v) {
       '<label class="fld"><span>Até</span><input class="ctl" type="date" id="' + id + '2" value="' + dIso(P.d2) + '" min="2026-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
       '<label class="fld"><span>Corretor</span><select class="ctl" id="' + id + 'c">' + $('#fcor').innerHTML.replace('value="' + P.cor + '"', 'value="' + P.cor + '" selected') + '</select></label></div>';
   }
-  var s = '<section class="card"><div class="cmp-head">' + painel('ca', A, 'Período A') + '<div></div>' + painel('cb', B, 'Período B') + '</div>';
+  var s = '<section class="card"><div class="ct"><h2>Funil comparado</h2></div><p class="desc">Dois períodos lado a lado, cada um com datas e corretor próprios. No centro, a variação do período B em relação ao A.</p><div class="cmp-head">' + painel('ca', A, 'Período A') + '<div></div>' + painel('cb', B, 'Período B') + '</div>';
   FUNIL.forEach(function (m, i) {
     if (i) {
       var ca = oa[FUNIL[i - 1]] ? fmt.pct(oa[m] / oa[FUNIL[i - 1]]) : '–', cb = ob[FUNIL[i - 1]] ? fmt.pct(ob[m] / ob[FUNIL[i - 1]]) : '–';
@@ -872,14 +970,14 @@ function rFi(v) {
       '<section class="card kpi"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</section>' +
       '<section class="card kpi"><div class="lbl">Ticket médio</div><div class="big">' + (o[7] ? fmt.mi(o.ticket) : '–') + '</div>' + chg(o.ticket, p.ticket, pa[0]) + '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2><div class="ctl2">' + segTipo() + segGran(gran2) + '</div></div><div class="chart" id="fiv"></div></section>' +
+    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2><div class="ctl2">' + segTipo() + segGran(gran2) + '</div></div>' + '<p class="desc">Valor vendido ao longo do período, somando um valor por imóvel vendido. Agrupe por dia, semana ou mês.</p>' + '<div class="chart" id="fiv"></div></section>' +
     '<div class="grid g-2">' +
-    '<section class="card"><div class="ct"><h2>VGV por</h2><div class="chips">' + DIMS.map(function (d) { return '<button class="pill" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div>' +
+    '<section class="card"><div class="ct"><h2>VGV por</h2><div class="chips">' + DIMS.map(function (d) { return '<button class="pill" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div>' + '<p class="desc">Vendas, VGV e ticket médio abertos pela dimensão escolhida.</p>' +
       '<div class="tw"><table><thead><tr>' + th('fi', 'nome', dim.n, s) + th('fi', 'n', 'Vendas', s) + th('fi', 'vgv', 'VGV', s) + th('fi', 'tk', 'Ticket médio', s) + '</tr></thead><tbody>' +
       (rows.length ? rows.map(function (r) { return '<tr><td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td><td>' + fmt.n(r.n) + '</td><td>' + fmt.brl(r.vgv) + '</td><td>' + fmt.brl(r.tk) + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Nenhuma venda no período.</td></tr>') +
       '</tbody><tfoot><tr><td>Total</td><td>' + fmt.n(o[7]) + '</td><td>' + fmt.brl(o.vgv) + '</td><td>' + fmt.brl(o.ticket) + '</td></tr></tfoot></table></div>' +
       '<p class="note">Venda dividida entre corretores conta para cada um; o total conta uma vez. O VGV soma um valor por imóvel vendido, como no Power BI.</p></section>' +
-    '<section class="card"><div class="ct"><h2>Negócios ganhos</h2><span class="sub">' + dl.length + ' no período</span></div>' +
+    '<section class="card"><div class="ct"><h2>Negócios ganhos</h2><span class="sub">' + dl.length + ' no período</span></div>' + '<p class="desc">Cada venda do período, da mais recente para a mais antiga.</p>' +
       '<div class="tw"><table class="deal"><thead><tr><th style="cursor:default">Data</th><th style="cursor:default;text-align:left">Corretor</th><th style="cursor:default">Imóvel</th><th style="cursor:default">Valor</th></tr></thead><tbody>' +
       (dl.length ? dl.map(function (n) { var k = n.e.imo || ('n' + n.e.x), rep = vistosImo[k]; vistosImo[k] = 1; return '<tr><td style="text-align:left">' + fmt.data(n.e.d) + '</td><td style="text-align:left">' + esc(n.cor.join(', ') || '–') + '</td><td>' + esc(n.e.imo || '–') + (C.k.bai[n.e.b] ? ' <span style="color:var(--ink3)">· ' + esc(C.k.bai[n.e.b]) + '</span>' : '') + '</td><td>' + fmt.brl(n.e.val) + (rep ? ' <span title="Mesmo imóvel de outro negócio: entra uma vez no VGV" style="color:var(--ink3)">*</span>' : '') + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Nenhuma venda no período.</td></tr>') +
       '</tbody></table></div>' + (Object.keys(vistosImo).length < dl.length ? '<p class="note">* Mesmo imóvel de outro negócio do período: conta como venda, mas entra uma vez no VGV.</p>' : '') + '</section></div>';
