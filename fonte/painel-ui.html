@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04j exploração: dimensões com ícones, métricas à direita, tabela padronizada -->
+<!-- v2026-11-04k participação com altura fixa, métricas centralizadas, legenda mais próxima -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -245,7 +245,7 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 @media (max-width:1180px){.dims{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:620px){.dims{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Exploração · participação: rosca | tabela | métricas à direita */
-.pz3{display:grid;grid-template-columns:240px minmax(0,1fr) 196px;gap:24px 40px;align-items:center}
+.pz3{display:grid;grid-template-columns:240px minmax(0,1fr) 196px;gap:24px 40px;align-items:center;min-height:400px}
 .pz3 .donut{justify-self:center}
 @media (max-width:1180px){.pz3{grid-template-columns:220px minmax(0,1fr)}.pz3 .mlist{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap;order:-1}.pz3 .mlist .lb{display:none}.pz3 .mlist button{padding:0 12px}}
 @media (max-width:760px){.pz3{grid-template-columns:minmax(0,1fr)}}
@@ -307,9 +307,9 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 .donut .ctr b{font:600 30px/1.1 var(--display);letter-spacing:-.02em;color:var(--ink)}
 .donut .ctr span{margin-top:4px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);line-height:1.35}
 .lg{display:flex;flex-direction:column;min-width:0;width:100%}
-.lg .lh,.lg .lr{display:grid;grid-template-columns:10px minmax(0,1fr) 36% minmax(0,1fr);gap:16px;align-items:center}
-.lg .vv{display:flex;justify-content:flex-end;align-items:baseline}
-.lg .vv>*{width:56px;text-align:right}
+.lg .lh,.lg .lr{display:grid;grid-template-columns:10px minmax(110px,190px) minmax(0,1fr) auto;gap:14px;align-items:center}
+.lg .vv{display:flex;justify-content:flex-end;align-items:baseline;gap:6px}
+.lg .vv>*{width:40px;text-align:right}
 .lg .lh{padding:0 10px 8px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--line)}
 .lg .lh .vv span{text-align:right}
 .lg .lr{height:34px;padding:0 10px;border-radius:6px;font-size:13px;cursor:default;transition:background .12s}
@@ -959,7 +959,7 @@ function rEx(v) {
   // participação
   var sh = rows.filter(function (r) { return r.c[m] > 0; }).sort(function (a, b) { return b.c[m] - a.c[m]; }), soma = 0;
   sh.forEach(function (r) { soma += r.c[m]; });
-  var top = sh.slice(0, 6), resto = sh.slice(6), outros = 0; resto.forEach(function (r) { outros += r.c[m]; });
+  var nTop = sh.length === 7 ? 7 : 6, top = sh.slice(0, nTop), resto = sh.slice(nTop), outros = 0;   // "Outros (1)" não faz sentido: mostra o 7º direto resto.forEach(function (r) { outros += r.c[m]; });
   var segs = top.map(function (r, i) { return { nome: r.nome, n: r.c[m], c: PALS[i] }; }); if (outros) segs.push({ nome: 'Outros (' + resto.length + ')', n: outros, c: PALS[6] });
   var cols = { nome: { v: function (r) { return r.nome; }, tipo: 's' }, vgv: { v: function (r) { return r.vgv; } } };
   FUNIL.concat([8]).forEach(function (mm) { cols['m' + mm] = { v: function (r) { return r.c[mm]; } }; });
@@ -984,14 +984,14 @@ function rEx(v) {
     '<section class="card"><div class="ct"><h2>Analisar por</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' +
       '<p class="desc">Escolha como abrir os números. A participação e o funil abaixo mudam juntos.</p><div class="dims" role="group" aria-label="Dimensão">' +
       DIMS.map(function (d) { var q = (m === 8 && d.semImovel) ? 0 : porDim(C, m, FX.d1, FX.d2, f, d.k).filter(function (g) { return g.nome !== 'Sem informação' && g.nome !== 'Sem corretor'; }).length, un = { cor: ['corretor', 'corretores'], vei: ['veículo', 'veículos'], bai: ['bairro', 'bairros'], cat: ['tipologia', 'tipologias'], dor: ['faixa', 'faixas'], are: ['faixa', 'faixas'] }[d.k]; return '<button class="dm" data-exd="' + d.k + '" aria-pressed="' + (d.k === dk) + '"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICD[d.k] + '</svg></span><span class="tx"><b>' + d.n + '</b><small>' + (q ? q + ' ' + un[q === 1 ? 0 : 1] : 'sem dados') + '</small></span></button>'; }).join('') + '</div></section>' +
-    '<section class="card"><div class="ct"><h2>Participação</h2><span class="sub">' + MET[m].n + '</span></div>' + '<p class="desc">Quanto cada ' + (dk === 'cor' ? 'corretor' : dim.n.toLowerCase()) + ' representa no total da métrica escolhida. Passe o mouse no gráfico ou na tabela.</p>' +
+    '<section class="card"><div class="ct"><h2>Participação</h2></div>' + '<p class="desc">Quanto cada ' + (dk === 'cor' ? 'corretor' : dim.n.toLowerCase()) + ' representa no total da métrica escolhida. Passe o mouse no gráfico ou na tabela.</p>' +
       '<div class="pz3">' + (soma ? '<div class="donut" id="dn"></div>' +
         '<div class="lg"><div class="lh"><span></span><span>' + esc(dim.n) + '</span><span></span><span class="vv"><span>Qtd.</span><span>%</span></span></div>' +
-        segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="vv"><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></span></div>'; }).join('') + '</div>' +
+        segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"' + (i === top.length ? ' title="Soma de ' + resto.length + (resto.length === 1 ? ' item menor' : ' itens menores') + '; todos aparecem na tabela abaixo."' : '') + '><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="vv"><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></span></div>'; }).join('') + '</div>' +
         ''
       : '<div style="grid-column:1 / span 2">' + (m === 8 && dim.semImovel ? '<div class="empty"><b style="font:600 30px var(--display);color:var(--ink3)">–</b><br>Agenciamentos não têm veículo de captação.</div>'
       : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' no período.</div>') + '</div>') +
-      '<div class="mlist" role="group" aria-label="Métrica"><p class="lb">Métricas</p>' + [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (k) { return '<button data-exm="' + k + '" aria-pressed="' + (k === m) + '">' + MET[k].n + '</button>'; }).join('') + '</div></div>' + (soma && resto.length ? '<p class="note">“Outros” soma ' + resto.length + ' ' + (resto.length === 1 ? 'item' : 'itens') + ' menores; todos aparecem na tabela abaixo.</p>' : '') +
+      '<div class="mlist" role="group" aria-label="Métrica">' + [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (k) { return '<button data-exm="' + k + '" aria-pressed="' + (k === m) + '">' + MET[k].n + '</button>'; }).join('') + '</div></div>' + 
     '</section>' +
     '<section class="card"><div class="ct"><h2>Funil por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' + '<p class="desc">O funil completo de cada linha, com a conversão entre as etapas, o VGV e os agenciamentos. Clique no cabeçalho para ordenar.</p>' +
       '<div class="tw alta"><table id="tex"><thead><tr>' + head + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + cel(r) + '</tr>'; }).join('') + '</tbody><tfoot><tr>' + foot + '</tr></tfoot></table></div>' +
