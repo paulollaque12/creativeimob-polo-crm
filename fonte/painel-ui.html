@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04f performance: trilho de métricas, evolução semanal com mês anterior e semanas por vir, textos introdutórios -->
+<!-- v2026-11-04g ranking da performance com cartão de foto e mês anterior -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -220,6 +220,20 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .rk .tr i{display:block;height:100%;background:var(--bar);border-radius:3px}
 .rk:first-child .tr i{background:var(--red)}
 .rk .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.rk{position:relative;padding:3px 6px;margin:0 -6px;border-radius:7px;cursor:default;transition:background .12s}
+.rank.hov .rk{opacity:.55}.rank.hov .rk.on{opacity:1;background:var(--track)}
+.rk:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.rkcard{position:relative}
+.rtip{position:absolute;z-index:8;pointer-events:none;display:flex;gap:14px;align-items:center;padding:12px 16px 12px 12px;border-radius:12px;background:var(--ink);color:var(--paper);box-shadow:0 14px 34px rgba(0,0,0,.35);opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;max-width:calc(100% - 40px)}
+.rtip.on{opacity:1;transform:none}
+.rtip .fo{position:relative;flex:none;width:58px;height:58px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font:600 19px var(--display);background:linear-gradient(160deg,#3a3a3d,#1e1e20);color:#b9b5af;box-shadow:0 0 0 2px var(--paper)}
+.rtip .fo.l1{box-shadow:0 0 0 2px #d4b46a}.rtip .fo.l2{box-shadow:0 0 0 2px #c2c5cb}.rtip .fo.l3{box-shadow:0 0 0 2px #c48a5c}
+.rtip .fo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rtip .tx{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:12px;line-height:1.35}
+.rtip .tx b{font:600 15px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtip .tx small{opacity:.72;font-size:11.5px}
+.rtip .mv{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:11.5px;padding:2px 8px;border-radius:999px;margin-top:3px;align-self:flex-start}
+.rtip .mv.up{background:rgba(60,207,130,.16);color:#2f9e62}.rtip .mv.dn{background:rgba(232,150,77,.18);color:#c46a1e}.rtip .mv.eq{background:rgba(127,127,127,.18)}.rtip .mv.nv{border:1px solid currentColor;opacity:.8;letter-spacing:.1em}
 
 /* ---------- tabelas ---------- */
 .tw{overflow-x:auto;margin:0 -4px 0 0;padding:0 4px 0 0}
@@ -776,7 +790,7 @@ function rPf(v) {
   var L = linhas(C, m, d1, d2, f), g = {};
   L.forEach(function (e) { (g[e.r] = g[e.r] || []).push(e); });
   var rows = Object.keys(g).map(function (r) {
-    var o = { nome: C.k.cor[+r] || 'Sem corretor', tot: distintos(g[r]), w: [] };
+    var o = { r: +r, nome: C.k.cor[+r] || 'Sem corretor', tot: distintos(g[r]), w: [] };
     sem.forEach(function (w, i) { o.w[i] = distintos(g[r].filter(function (e) { return e.d >= w[0] && e.d <= w[1]; })); });
     return o;
   });
@@ -791,10 +805,10 @@ function rPf(v) {
       '<div class="mrail" role="group" aria-label="Métrica"><span class="gl" style="grid-column:1 / span 8">Funil</span><span class="gl" style="grid-column:10 / span 2">Imóveis</span>' +
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (k, i) { return '<button class="mt" data-pf="' + k + '" aria-pressed="' + (k === m) + '" style="grid-column:' + (k < 8 ? k + 1 : k + 2) + '"><span class="st">' + (k < 8 ? String(k + 1).padStart(2, '0') : k === 8 ? 'AG' : 'PL') + '</span><span class="nm">' + MET[k].n + '</span><span class="vl">' + fmt.n(medida(C, k, d1, d2, f)) + '</span>' + (k < 7 ? '<span class="ar" aria-hidden="true"></span>' : '') + '</button>'; }).join('') + '</div></section>' +
     '<div class="grid g-2">' +
-      '<section class="card"><div class="ct"><h2>Ranking de corretores</h2><span class="sub">' + MET[m].n + ' no mês</span></div>' +
+      '<section class="card rkcard"><div class="ct"><h2>Ranking de corretores</h2><span class="sub">' + MET[m].n + ' no mês</span></div>' +
         '<p class="desc">Quem mais gerou ' + MET[m].n.toLowerCase() + ' no mês, do maior para o menor.</p>' +
-        (rk.length ? '<div class="rank">' + rk.map(function (r, i) { return '<div class="rk"><span class="p">' + (i + 1) + '</span><span class="nm" title="' + esc(r.nome) + '">' + esc(r.nome) + '</span><span class="tr"><i style="width:' + (mx ? r.tot / mx * 100 : 0) + '%"></i></span><span class="n">' + fmt.n(r.tot) + '</span></div>'; }).join('') + '</div>' : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' neste mês.</div>') +
-      '</section>' +
+        (rk.length ? '<div class="rank">' + rk.map(function (r, i) { return '<div class="rk" data-rk="' + i + '" tabindex="0"><span class="p">' + (i + 1) + '</span><span class="nm" title="' + esc(r.nome) + '">' + esc(r.nome) + '</span><span class="tr"><i style="width:' + (mx ? r.tot / mx * 100 : 0) + '%"></i></span><span class="n">' + fmt.n(r.tot) + '</span></div>'; }).join('') + '</div>' : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' neste mês.</div>') +
+      '<div class="rtip" role="tooltip"></div></section>' +
       '<section class="card pfc"><div class="ct"><h2>Evolução semanal</h2><span class="sub">W = semana de segunda a domingo</span></div>' +
         '<p class="desc">Semana a semana do mês, comparada com a mesma semana do mês anterior. Passe o mouse para ver a diferença e o acumulado.</p>' +
         '<div class="lgd"><span><i></i>' + MESL[+p[1] - 1] + '</span><span><i class="ant"></i>' + MESL[(+p[1] + 10) % 12] + ' (mês anterior)</span></div><div class="chart" id="pfl"></div></section>' +
@@ -824,6 +838,29 @@ function rPf(v) {
     var ac = acum(L, d1, fimW), off = fimW - d1, acA = acum(LA, pd1, Math.min(pd1 + off, pd2));
     h += '<span class="ln2">Acumulado até ' + dd(fimW) + ': ' + fmt.n(ac) + ' · ' + mesA + ' nos mesmos ' + (off + 1) + ' dias: ' + fmt.n(acA) + var_(ac, acA) + '</span>';
     return h;
+  }
+  // Ranking: ao passar o mouse, cartão com foto do Vista, posição, valor e comparação com o mês anterior nos mesmos dias
+  var fimR = Math.min(sem[sem.length - 1][1], ultimo), diasR = fimR - d1 + 1, peR = Math.min(pd1 + diasR - 1, pd2), gA = {};
+  linhas(C, m, pd1, peR, f).forEach(function (e) { (gA[e.r] = gA[e.r] || []).push(e); });
+  var rkA = Object.keys(gA).map(function (r) { return { r: +r, tot: distintos(gA[r]) }; }).sort(function (a, b) { return b.tot - a.tot || (C.k.cor[a.r] || '').localeCompare(C.k.cor[b.r] || ''); }), posA = {};
+  rkA.forEach(function (x, i) { posA[x.r] = { pos: i + 1, tot: x.tot }; });
+  var totM = distintos(L), rtip = v.querySelector('.rtip'), rankEl = v.querySelector('.rank');
+  function ini(nm) { return nm.split(/\s+/).map(function (q) { return q[0] || ''; }).slice(0, 2).join('').toUpperCase(); }
+  function mostraRk(i) {
+    var r = rk[i], a = posA[r.r], pos = i + 1, ft = (C.k.fot || [])[r.r];
+    var mv = !a ? '<span class="mv nv">NOVO</span>' : a.pos > pos ? '<span class="mv up">▲ ' + (a.pos - pos) + (a.pos - pos === 1 ? ' posição' : ' posições') + '</span>' : a.pos < pos ? '<span class="mv dn">▼ ' + (pos - a.pos) + (pos - a.pos === 1 ? ' posição' : ' posições') + '</span>' : '<span class="mv eq">= mesma posição</span>';
+    rtip.innerHTML = '<div class="fo' + (pos <= 3 ? ' l' + pos : '') + '">' + esc(ini(r.nome)) + (ft ? '<img src="' + esc(ft) + '" alt="" onerror="this.remove()">' : '') + '</div>' +
+      '<div class="tx"><b>' + esc(r.nome) + '</b><small>' + pos + 'º lugar · ' + fmt.n(r.tot) + ' ' + mN + (totM ? ' · ' + fmt.pct(r.tot / totM) + ' do total' : '') + '</small>' +
+      '<span>' + mesA.charAt(0).toUpperCase() + mesA.slice(1) + (fimR === sem[sem.length - 1][1] ? ' (mês inteiro): ' : ', mesmos ' + diasR + ' dias: ') + (a ? fmt.n(a.tot) + ' · ' + a.pos + 'º lugar' + var_(r.tot, a.tot) : 'sem registros') + '</span>' + mv + '</div>';
+    var row = rankEl.querySelector('[data-rk="' + i + '"]'), cr = rtip.parentNode.getBoundingClientRect(), rr = row.getBoundingClientRect();
+    var top = rr.bottom - cr.top + 6; if (top + rtip.offsetHeight > cr.height - 8) top = rr.top - cr.top - rtip.offsetHeight - 6;
+    rtip.style.top = top + 'px'; rtip.style.left = Math.max(16, Math.min(rr.left - cr.left + 28, cr.width - rtip.offsetWidth - 16)) + 'px';
+    rankEl.classList.add('hov'); rankEl.querySelectorAll('.rk').forEach(function (e) { e.classList.toggle('on', e === row); }); rtip.classList.add('on');
+  }
+  function escondeRk() { if (!rankEl) return; rankEl.classList.remove('hov'); rankEl.querySelectorAll('.rk.on').forEach(function (e) { e.classList.remove('on'); }); rtip.classList.remove('on'); }
+  if (rankEl) {
+    rankEl.querySelectorAll('.rk').forEach(function (e) { var i = +e.dataset.rk; e.onmouseenter = function () { mostraRk(i); }; e.onfocus = function () { mostraRk(i); }; e.onblur = escondeRk; });
+    rankEl.onmouseleave = escondeRk; rankEl.onscroll = escondeRk;
   }
   var card = $('#pfl').closest('.card'), alt = card.clientHeight - ($('#pfl').getBoundingClientRect().top - card.getBoundingClientRect().top) - 22;
   semanal($('#pfl'), tot, ant, ate, sem.map(function (w, i) { return 'W' + (i + 1); }), tipPf, Math.max(240, Math.round(alt)));

@@ -1,4 +1,4 @@
-/*polo-cubo v4 · de 2026-01-01 até D-1*/
+/*polo-cubo v5 · de 2026-01-01 até D-1 · com fotos dos corretores (k_fot)*/
 WITH
 d0 AS (
   SELECT Data, CodigoCliente, EtapaAcaoId, nome_usuario, veiculocaptacao_dn, bairro_imovel, categoria_imovel, dormitorios_imovel, areaprivativa_imovel
@@ -60,5 +60,12 @@ enc AS (
 SELECT CONCAT('m', CAST(m AS STRING)) k, COUNT(*) n, STRING_AGG(r, ';' ORDER BY d) s FROM enc GROUP BY m
 UNION ALL
 SELECT CONCAT('k_', t), COUNT(*), STRING_AGG(v, '\t' ORDER BY id) FROM kd GROUP BY t
+UNION ALL
+SELECT 'k_fot', COUNT(*), STRING_AGG(IFNULL(fo.foto, ''), '\t' ORDER BY kd.id)
+FROM kd LEFT JOIN (
+  SELECT TRIM(nome) nome, ANY_VALUE(foto) foto FROM `vistaprocessos.nitro_dados.vista_usuarios`
+  WHERE imobiliaria_id = 1005 AND foto IS NOT NULL AND foto != '' GROUP BY 1
+) fo ON fo.nome = TRIM(kd.v)
+WHERE kd.t = 'cor'
 UNION ALL
 SELECT 'ref', 0, CAST(CURRENT_DATE('America/Sao_Paulo') AS STRING)
