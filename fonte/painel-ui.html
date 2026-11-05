@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04c evolução no modelo Gralha: métricas à direita, barras/linha, hover com faixa e guia -->
+<!-- v2026-11-04d evolução: texto explicativo, sem Placas/Ano, suavizar 7d/14d na linha -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -157,6 +157,15 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 /* Evolução: gráfico à esquerda, métricas em lista à direita (modelo Gralha) */
 .evo{display:grid;grid-template-columns:minmax(0,1fr) 196px;gap:8px 28px;align-items:start}
 .evo .cap{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--ink2)}
+.desc{margin:0 0 16px;font-size:12.5px;color:var(--ink3);line-height:1.5}
+/* Suavizar (só no gráfico de linha por dia): botão discreto dentro do gráfico */
+.suav{position:absolute;top:0;right:0;z-index:4;display:flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.suav button{all:unset;cursor:pointer;height:24px;padding:0 10px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--ink3);display:inline-flex;align-items:center;gap:6px;transition:background .12s,color .12s}
+.suav button:hover{color:var(--ink)}
+.suav button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.suav button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.suav svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
+.chart .bruta{fill:none;stroke:var(--bar);stroke-width:1.3;opacity:.35;stroke-dasharray:2 3}
 .mlist{display:flex;flex-direction:column;gap:6px}
 .mlist .lb{font-size:11.5px;color:var(--ink3);margin:0 0 2px}
 .mlist button{all:unset;cursor:pointer;height:34px;border-radius:8px;border:1px solid var(--line);text-align:center;font-size:12.5px;font-weight:600;color:var(--ink2);transition:background .12s,color .12s,border-color .12s}
@@ -464,7 +473,7 @@ function chipsMet(lista, sel, attr) {
 }
 function granDe(d1, d2) { var n = d2 - d1 + 1; return n <= 62 ? 'dia' : n <= 200 ? 'sem' : 'mes'; }
 // Agrupamento escolhido pelo usuário (Ano, Mês, Semana, Dia); sem escolha, automático pelo tamanho do período
-var GRANS = [['dia', 'Dia'], ['sem', 'Semana'], ['mes', 'Mês'], ['ano', 'Ano']];
+var GRANS = [['dia', 'Dia'], ['sem', 'Semana'], ['mes', 'Mês']];
 function granAtual(padrao) { return ST.gran || padrao; }
 function segGran(g) {
   return '<div class="seg" role="group" aria-label="Agrupar por">' + GRANS.map(function (x) { return '<button data-gran="' + x[0] + '" aria-pressed="' + (x[0] === g) + '">' + x[1] + '</button>'; }).join('') + '</div>';
@@ -475,6 +484,30 @@ function segTipo() {
   return '<div class="seg ic" role="group" aria-label="Tipo de gráfico">' +
     '<button data-tipo="barras" aria-pressed="' + (ST.tipo !== 'linha') + '" title="Barras" aria-label="Barras"><svg viewBox="0 0 24 24"><path d="M6 20V11M12 20V5M18 20v-6"/></svg></button>' +
     '<button data-tipo="linha" aria-pressed="' + (ST.tipo === 'linha') + '" title="Linha" aria-label="Linha"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/></svg></button></div>';
+}
+// Suavizar: média móvel de 7 ou 14 dias (só linha + agrupamento por dia)
+ST.suav = 0; ST.suavAberto = false;
+function mediaMovel(C, m, d1, d2, f, valor, N) {
+  var a0 = Math.max(INICIO, d1 - N + 1), dia = serie(C, m, a0, d2, f, 'dia', valor), out = [];
+  for (var i = d1; i <= d2; i++) {
+    var ini = Math.max(a0, i - N + 1), s = 0;
+    for (var j = ini; j <= i; j++) s += dia[j - a0].v;
+    out.push(s / (i - ini + 1));
+  }
+  return out;
+}
+function htmlSuav() {
+  return '<div class="suav" role="group" aria-label="Suavizar">' +
+    '<button data-suav="t" aria-pressed="' + (!!ST.suav) + '" aria-expanded="' + (ST.suavAberto || !!ST.suav) + '" title="Suavizar com média móvel"><svg viewBox="0 0 24 24"><path d="M3 15c3-6 6-6 9 0s6 6 9 0"/></svg>Suavizar</button>' +
+    (ST.suavAberto || ST.suav ? [7, 14].map(function (n) { return '<button data-suav="' + n + '" aria-pressed="' + (ST.suav === n) + '">' + n + 'd</button>'; }).join('') : '') + '</div>';
+}
+function ligarSuav(v) {
+  v.querySelectorAll('[data-suav]').forEach(function (b) { b.onclick = function () {
+    var k = b.dataset.suav;
+    if (k === 't') { if (ST.suav) { ST.suav = 0; ST.suavAberto = false; } else ST.suavAberto = !ST.suavAberto; }
+    else ST.suav = ST.suav === +k ? 0 : +k;
+    render();
+  }; });
 }
 function ligarTipo(v) { v.querySelectorAll('[data-tipo]').forEach(function (b) { b.onclick = function () { ST.tipo = b.dataset.tipo; try { localStorage.setItem('polo-evo', ST.tipo); } catch (e) {} render(); }; }); }
 function ligarGran(v) { v.querySelectorAll('[data-gran]').forEach(function (b) { b.onclick = function () { ST.gran = b.dataset.gran; render(); }; }); }
@@ -507,13 +540,17 @@ function barras(el, pts, opts) {
   nice.t.forEach(function (t) { s += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(t) + '" y2="' + Y(t) + '"/><text x="' + (pl - 8) + '" y="' + (Y(t) + 4) + '" text-anchor="end">' + (opts.fmtAx || fmt.n)(t) + '</text>'; });
   s += '</g><rect class="hb" x="0" y="' + (pt - 10) + '" width="' + bw + '" height="' + (ih + 10) + '" rx="6"/><line class="hg" x1="0" x2="0" y1="' + (pt - 10) + '" y2="' + (pt + ih) + '"/>';
   var passo = Math.ceil(n / Math.max(1, Math.floor(iw / 52))), mostraVal = ln ? n <= 16 : (n <= 31 && bw >= 18);
+  var S = ln && opts.suave ? opts.suave : null;   // com suavização: linha principal = média móvel; a original fica tracejada e clara
+  function VV(i) { return S ? S[i] : pts[i].v; }
+  if (S) mostraVal = false;
+  if (S && n) s += '<path class="bruta" d="' + pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ') + '"/>';
   if (ln && n) {
-    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ');
+    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + CX(i).toFixed(1) + ' ' + Y(VV(i)).toFixed(1); }).join(' ');
     s += '<path d="' + d + ' L' + CX(n - 1).toFixed(1) + ' ' + (pt + ih) + ' L' + CX(0).toFixed(1) + ' ' + (pt + ih) + 'Z" fill="url(#' + id + 'a)"/>';
     s += '<path d="' + d + '" fill="none" stroke="var(--bar)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
   }
   pts.forEach(function (p, i) {
-    if (ln) s += '<circle class="pt" data-i="' + i + '" cx="' + CX(i) + '" cy="' + Y(p.v) + '" r="' + (n > 40 ? 2.2 : 3.6) + '"/>';
+    if (ln) s += '<circle class="pt" data-i="' + i + '" cx="' + CX(i) + '" cy="' + Y(VV(i)) + '" r="' + (S ? 2.4 : n > 40 ? 2.2 : 3.6) + '"/>';
     else { var w = Math.max(1, Math.min(bw - gap, 64)), h = Y(0) - Y(p.v); s += '<rect class="br" data-i="' + i + '" x="' + (CX(i) - w / 2) + '" y="' + Y(p.v) + '" width="' + w + '" height="' + Math.max(h, p.v ? 1.5 : 0) + '" rx="' + Math.min(4, w / 4) + '" fill="url(#' + id + 'b)"/>'; }
     if (mostraVal && p.v) s += '<text class="vl" x="' + CX(i) + '" y="' + (Y(p.v) - (ln ? 10 : 6)) + '" text-anchor="middle">' + fv(p.v) + '</text>';
     if (i % passo === 0) s += '<text class="ax" data-i="' + i + '" x="' + CX(i) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(p.l) + '</text>';
@@ -526,10 +563,10 @@ function barras(el, pts, opts) {
     var p = pts[i], r = svg.getBoundingClientRect(), k = r.width / W;
     hb.setAttribute('x', pl + i * bw); hb.setAttribute('width', bw); hg.setAttribute('x1', CX(i)); hg.setAttribute('x2', CX(i));
     svg.classList.add('hov'); svg.querySelectorAll('[data-i]').forEach(function (e) { e.classList.toggle('on', +e.dataset.i === i); });
-    tip.innerHTML = '<small>' + esc(p.t || p.l) + '</small><b>' + fv(p.v) + '</b> <span>' + esc(opts.un || '') + '</span>';
+    tip.innerHTML = '<small>' + esc(p.t || p.l) + '</small>' + (S ? '<b>' + (opts.fmtS || fv)(S[i]) + '</b> <span>média de ' + opts.nSuave + ' dias</span><small style="margin:3px 0 0">no dia: ' + fv(p.v) + ' ' + esc(opts.un || '') + '</small>' : '<b>' + fv(p.v) + '</b> <span>' + esc(opts.un || '') + '</span>');
     var x = CX(i) * k, w = el.clientWidth;
     tip.classList.toggle('el', x < 90); tip.classList.toggle('er', x > w - 90);
-    tip.style.left = x + 'px'; tip.style.top = Math.max(0, (Y(p.v) - 14) * k) + 'px'; tip.classList.add('on');
+    tip.style.left = x + 'px'; tip.style.top = Math.max(0, (Y(VV(i)) - 14) * k) + 'px'; tip.classList.add('on');
   }
   function desliga() { at = -1; svg.classList.remove('hov'); svg.querySelectorAll('.on').forEach(function (e) { e.classList.remove('on'); }); tip.classList.remove('on'); }
   svg.onmousemove = function (ev) { var r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width, i = Math.floor((x - pl) / bw); if (i < 0 || i >= n) desliga(); else liga(i); };
@@ -614,6 +651,7 @@ function rOv(v) {
   var f = F(), o = funil(C, FX.d1, FX.d2, f), pa = anterior(FX.d1, FX.d2), p = funil(C, pa[0], pa[1], f);
   var conv = o[0] ? o[7] / o[0] : 0, convp = p[0] ? p[7] / p[0] : 0, nd = FX.d2 - FX.d1 + 1, lpd = o[0] / nd, lpdp = p[0] / nd;
   var cvis = o[0] ? o[5] / o[0] : 0, cvisp = p[0] ? p[5] / p[0] : 0, imov = FX.vei ? '<p class="note">Agenciamentos não têm veículo de captação: com esse filtro ativo eles ficam zerados.</p>' : '';
+  if (ST.evo === 9) ST.evo = 0;
   var gran = granAtual(granDe(FX.d1, FX.d2)), sel = ST.evo;
   v.innerHTML =
     '<div class="grid g-ov">' +
@@ -631,13 +669,16 @@ function rOv(v) {
         '<p class="note">Comparação com os ' + (FX.d2 - FX.d1 + 1) + ' dias anteriores (' + fmt.data(pa[0]) + ' a ' + fmt.data(pa[1]) + ').</p>' + imov +
       '</section>' +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução</h2><div class="ctl2">' + segTipo() + segGran(gran) + '</div></div>' +
-      '<div class="evo"><div><p class="cap">' + (sel === 'vgv' ? 'VGV' : MET[sel].n) + ' · ' + (sel === 'vgv' ? 'R$ por ' : sel >= 8 ? 'imóveis por ' : 'clientes únicos por ') + ({ dia: 'dia', sem: 'semana', mes: 'mês', ano: 'ano' })[gran] + '</p><div class="chart" id="evo"></div></div>' +
-      '<div class="mlist" role="group" aria-label="Métrica"><p class="lb">Métricas</p>' + [0, 1, 2, 3, 4, 5, 6, 7, 'vgv', 8, 9].map(function (m) { return '<button data-evo="' + m + '" aria-pressed="' + (m === sel) + '">' + (m === 'vgv' ? 'VGV' : MET[m].n) + '</button>'; }).join('') + '</div></div></section>';
+    '<section class="card"><div class="ct" style="margin-bottom:6px"><h2>Evolução</h2><div class="ctl2">' + segTipo() + segGran(gran) + '</div></div>' +
+      '<p class="desc">Como a métrica escolhida evolui ao longo do tempo. Escolha a métrica à direita e agrupe por dia, semana ou mês.</p>' +
+      '<div class="evo"><div><p class="cap">' + (sel === 'vgv' ? 'VGV' : MET[sel].n) + ' · ' + (sel === 'vgv' ? 'R$ por ' : sel >= 8 ? 'imóveis por ' : 'clientes únicos por ') + ({ dia: 'dia', sem: 'semana', mes: 'mês' })[gran] + (ST.tipo === 'linha' && gran === 'dia' && ST.suav ? ' · média móvel de ' + ST.suav + ' dias' : '') + '</p><div class="chart" id="evo"></div></div>' +
+      '<div class="mlist" role="group" aria-label="Métrica"><p class="lb">Métricas</p>' + [0, 1, 2, 3, 4, 5, 6, 7, 'vgv', 8].map(function (m) { return '<button data-evo="' + m + '" aria-pressed="' + (m === sel) + '">' + (m === 'vgv' ? 'VGV' : MET[m].n) + '</button>'; }).join('') + '</div></div></section>';
   v.querySelectorAll('[data-evo]').forEach(function (b) { b.onclick = function () { ST.evo = b.dataset.evo === 'vgv' ? 'vgv' : +b.dataset.evo; render(); }; });
   ligarGran(v); ligarTipo(v);
   var ehV = sel === 'vgv', pts = serie(C, ehV ? 7 : sel, FX.d1, FX.d2, f, gran, ehV ? 'vgv' : null).map(function (p) { return { l: rotulo(p.k, gran), t: rotuloLongo(p.k, gran), v: p.v }; });
-  barras($('#evo'), pts, { label: 'Evolução', tipo: ST.tipo, h: $('#evo').clientWidth < 600 ? 280 : 440, un: ehV ? 'de VGV' : MET[sel].n.toLowerCase(), fmtV: ehV ? fmt.mi : fmt.n, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n });
+  var podeSuav = ST.tipo === 'linha' && gran === 'dia', N = podeSuav ? ST.suav : 0, sv = N ? mediaMovel(C, ehV ? 7 : sel, FX.d1, FX.d2, f, ehV ? 'vgv' : null, N) : null;
+  barras($('#evo'), pts, { label: 'Evolução', tipo: ST.tipo, suave: sv, nSuave: N, h: $('#evo').clientWidth < 600 ? 280 : 440, un: ehV ? 'de VGV' : MET[sel].n.toLowerCase(), fmtV: ehV ? fmt.mi : fmt.n, fmtS: ehV ? fmt.mi : fmt.dec, fmtAx: ehV ? function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } : fmt.n });
+  if (podeSuav) { $('#evo').insertAdjacentHTML('beforeend', htmlSuav()); ligarSuav(v); }
 }
 function kv(k, v, c) { return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span>' + c + '</div>'; }
 
