@@ -361,6 +361,7 @@ function semanasMes(ano, mes) {
 }
 var fmt = {
   n: function (v) { return Math.round(v).toLocaleString('pt-BR'); },
+  dec: function (v) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
   pct: function (v, dec) { return (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }) + '%'; },
   mi: function (v) { return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Mi'; },
   brl: function (v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }); },
