@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04p financeiro: tabelas com 5 linhas + total -->
+<!-- v2026-11-04q barra lateral fixa, sem Atualizar, tema discreto -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -28,13 +28,13 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button,select,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100%}
 
 /* ---------- barra lateral ---------- */
-.side{background:var(--side);color:var(--sidefg);display:flex;flex-direction:column;gap:28px;padding:26px 18px 20px max(18px,env(safe-area-inset-left,0px));position:sticky;top:0;height:100vh;height:100dvh}
+.side{background:var(--side);color:var(--sidefg);display:flex;flex-direction:column;gap:28px;padding:26px 18px 20px max(18px,env(safe-area-inset-left,0px));position:sticky;top:0;height:100vh;align-self:start}
 .brand{display:flex;gap:12px;align-items:center}
 .mono{width:44px;height:44px;flex:none;display:grid;grid-template-columns:1fr 1fr;gap:2px;position:relative}
 .mono i{display:block}
@@ -58,6 +58,9 @@ button,select,input{font:inherit;color:inherit}
 .sbtn:hover{border-color:#4a4a4c}
 .sbtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7}
 .sbtn:focus-visible{outline:2px solid #e2353e}
+.sbtn.tema{width:28px;height:28px;padding:0;justify-content:center;border-radius:50%;border-color:transparent;color:var(--sidemut);opacity:.7;transition:opacity .15s,color .15s,border-color .15s}
+.sbtn.tema:hover{opacity:1;color:var(--sidefg);border-color:#2c2c2e}
+.sbtn.tema svg{width:14px;height:14px}
 
 /* ---------- área principal ---------- */
 .main{min-width:0;padding-block:28px 48px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px;max-width:1440px}
@@ -521,8 +524,7 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
     <div class="sidefoot">
       <span class="stamp" id="stamp">Carregando dados…</span>
       <div class="row">
-        <button class="sbtn" id="refresh" title="Buscar os dados mais recentes"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>Atualizar</button>
-        <button class="sbtn" id="theme" title="Alternar tema claro ou escuro"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Tema</button>
+        <button class="sbtn tema" id="theme" title="Alternar tema claro ou escuro" aria-label="Alternar tema claro ou escuro"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
       </div>
     </div>
   </aside>
@@ -1299,6 +1301,6 @@ async function carregar(forcar) {
     erro(e);
   }
 }
-$('#refresh').onclick = function () { carregar.tentou = false; $('#stamp').textContent = 'Atualizando…'; carregar(true); };
+if ($('#refresh')) $('#refresh').onclick = function () { carregar.tentou = false; $('#stamp').textContent = 'Atualizando…'; carregar(true); };
 carregar(false);
 </script>
