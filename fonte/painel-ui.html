@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04k participação com altura fixa, métricas centralizadas, legenda mais próxima -->
+<!-- v2026-11-04l comparativo redesenhado: períodos A/B, resumo e funil espelhado -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -333,6 +333,65 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 
 /* ---------- comparativo ---------- */
 .cmp-head{display:grid;grid-template-columns:minmax(0,1fr) 110px minmax(0,1fr);gap:18px;margin-bottom:22px}
+/* ===== Comparativo (v2): períodos, resumo e funil espelhado ===== */
+.cpA{--cc:var(--ink3);--cc2:#5e5b57}.cpB{--cc:var(--bar);--cc2:var(--bar2)}
+.pers{display:grid;grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);gap:0 14px;align-items:stretch}
+.per{position:relative;display:flex;flex-direction:column;gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.per::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cc)}
+.per .hd{display:flex;align-items:center;gap:12px}
+.per .lt{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 15px var(--display);color:#fff;background:linear-gradient(160deg,var(--cc),var(--cc2))}
+.per .ti{display:flex;flex-direction:column;gap:2px;min-width:0}
+.per .ti b{font:600 15px var(--display)}
+.per .ti small{font-size:12px;color:var(--ink3)}
+.per .ds{margin-left:auto;font:600 12px var(--body);color:var(--ink2);padding:5px 10px;border-radius:999px;background:var(--track);white-space:nowrap}
+.per .fl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.2fr);gap:10px}
+.per .fl .ctl{width:100%}
+.vs{align-self:center;justify-self:center;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:600 12px var(--display);letter-spacing:.08em;color:var(--ink3);border:1px solid var(--line);background:var(--paper)}
+.kps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kp{display:flex;flex-direction:column;gap:12px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.kp .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kp .lbl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.kp .ln{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:10px;align-items:center}
+.kp .ln .k{font:600 10px var(--display);color:var(--cc);text-align:center}
+.kp .ln .tr{height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.kp .ln .tr i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cc2),var(--cc))}
+.kp .ln .v{font:600 17px var(--display);font-variant-numeric:tabular-nums lining-nums;text-align:right;min-width:64px}
+.kp .ln.cpA .v{color:var(--ink2)}
+.bfl{display:flex;flex-direction:column}
+.bfl .bh,.bfl .br{display:grid;grid-template-columns:84px minmax(0,1fr) 184px minmax(0,1fr) 84px;gap:0 14px;align-items:center}
+.bfl .bh{padding:0 10px 12px;border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.bfl .bh .a{grid-column:1 / span 2;display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.bfl .bh .m{text-align:center}
+.bfl .bh .b{grid-column:4 / span 2;display:flex;align-items:center;gap:8px}
+.bfl .bh i{width:10px;height:10px;border-radius:3px;background:linear-gradient(160deg,var(--cc),var(--cc2))}
+.bfl .br{position:relative;height:52px;padding:0 10px;border-radius:10px;transition:background .12s}
+.bfl .br+.br{margin-top:2px}
+.bfl .br:hover{background:var(--track)}
+.bfl .vl{display:flex;flex-direction:column;gap:1px;font-variant-numeric:tabular-nums lining-nums}
+.bfl .vl b{font:600 20px/1.1 var(--display)}
+.bfl .vl small{font-size:10.5px;color:var(--ink3);white-space:nowrap}
+.bfl .vl.a{align-items:flex-end;text-align:right}.bfl .vl.a b{color:var(--ink2)}.bfl .vl.b{align-items:flex-start}
+.bfl .tk{height:16px;display:flex;border-radius:4px;background:var(--track);overflow:hidden}
+.bfl .tk.a{justify-content:flex-end}
+.bfl .tk i{display:block;height:100%;border-radius:4px;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.bfl .tk.a i{background:linear-gradient(270deg,var(--ink3),#5e5b57)}
+.bfl .tk.b i{background:linear-gradient(90deg,var(--bar2),var(--bar))}
+.bfl .md{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.bfl .md .nm{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.bfl .md .nm em{font:600 9.5px var(--display);font-style:normal;color:var(--ink3);letter-spacing:.06em}
+.bfl .br.sale .md .nm{color:var(--red)}
+.bfl .br.sale .vl.b b{color:var(--red)}
+.bfl .ft{display:grid;grid-template-columns:minmax(0,1fr) 184px minmax(0,1fr);gap:0 14px;align-items:center;margin-top:12px;padding:16px 10px 0;border-top:1px solid var(--line)}
+.bfl .ft .x{display:flex;flex-direction:column;gap:3px}
+.bfl .ft .x.a{align-items:flex-end;text-align:right}
+.bfl .ft .x small{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.bfl .ft .x b{font:600 22px var(--display);font-variant-numeric:tabular-nums lining-nums}
+.bfl .ft .x.a b{color:var(--ink2)}
+.bfl .ft .x span{font-size:12px;color:var(--ink3)}
+.bfl .ft .md{gap:6px}
+@media (max-width:1180px){.kps{grid-template-columns:repeat(2,minmax(0,1fr))}.per .fl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.per .fl .fld:last-child{grid-column:1 / -1}}
+@media (max-width:900px){.pers{grid-template-columns:minmax(0,1fr)}.vs{margin:10px auto}.bfl .bh,.bfl .br{grid-template-columns:52px minmax(0,1fr) 112px minmax(0,1fr) 52px;gap:0 8px}.bfl .vl small{display:none}.bfl .ft{grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr)}.bfl .vl b{font-size:16px}.bfl .bh{font-size:9.5px}}
+@media (max-width:620px){.kps{grid-template-columns:minmax(0,1fr)}.bfl .bh,.bfl .br{grid-template-columns:30px minmax(0,1fr) 92px minmax(0,1fr) 30px;gap:0 6px;padding:0 4px}.bfl .md .nm{font-size:11.5px}.bfl .md .nm em{display:none}.bfl .vl b{font-size:14px}.bfl .bh .dt{display:none}.bfl .ft{grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);padding-inline:4px}.bfl .ft .x b{font-size:15px}.bfl .tk{height:12px}}
 .cmp-p{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px;border:1px solid var(--line);border-radius:8px}
 .cmp-p .fld{flex:1 1 130px;min-width:0}
 .cmp-p .ctl{width:100%}
@@ -1007,25 +1066,42 @@ function rCp(v) {
   var A = FX.ca, B = FX.cb;
   var oa = funil(C, A.d1, A.d2, { cor: A.cor, vei: FX.vei }), ob = funil(C, B.d1, B.d2, { cor: B.cor, vei: FX.vei });
   var max = 0; FUNIL.forEach(function (m) { max = Math.max(max, oa[m], ob[m]); });
-  function painel(id, P, nome) {
-    return '<div class="cmp-p"><div class="tag">' + nome + '<em>' + (P.d2 - P.d1 + 1) + ' dias</em></div>' +
-      '<label class="fld"><span>De</span><input class="ctl" type="date" id="' + id + '1" value="' + dIso(P.d1) + '" min="2026-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
+  function dm(i) { return rotulo(i, 'dia'); }
+  function faixa(P) { return dm(P.d1) + ' → ' + dm(P.d2); }
+  function nomeCor(P) { return P.cor ? (C.k.cor[P.cor] || 'Corretor') : 'Todos os corretores'; }
+  function painel(id, P, L, cls) {
+    return '<div class="per ' + cls + '"><div class="hd"><span class="lt">' + L + '</span><span class="ti"><b>Período ' + L + '</b><small>' + faixa(P) + ' · ' + esc(nomeCor(P)) + '</small></span><span class="ds">' + (P.d2 - P.d1 + 1) + ' dias</span></div>' +
+      '<div class="fl"><label class="fld"><span>De</span><input class="ctl" type="date" id="' + id + '1" value="' + dIso(P.d1) + '" min="2026-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
       '<label class="fld"><span>Até</span><input class="ctl" type="date" id="' + id + '2" value="' + dIso(P.d2) + '" min="2026-01-01" max="' + dIso(hojeIdx()) + '"></label>' +
-      '<label class="fld"><span>Corretor</span><select class="ctl" id="' + id + 'c">' + $('#fcor').innerHTML.replace('value="' + P.cor + '"', 'value="' + P.cor + '" selected') + '</select></label></div>';
+      '<label class="fld"><span>Corretor</span><select class="ctl" id="' + id + 'c">' + $('#fcor').innerHTML.replace('value="' + P.cor + '"', 'value="' + P.cor + '" selected') + '</select></label></div></div>';
   }
-  var s = '<section class="card"><div class="ct"><h2>Funil comparado</h2></div><p class="desc">Dois períodos lado a lado, cada um com datas e corretor próprios. No centro, a variação do período B em relação ao A.</p><div class="cmp-head">' + painel('ca', A, 'Período A') + '<div></div>' + painel('cb', B, 'Período B') + '</div>';
+  var ca = oa[0] ? oa[7] / oa[0] : 0, cb = ob[0] ? ob[7] / ob[0] : 0;
+  function kp(lbl, a, b, f, dA, dB) {
+    var mx = Math.max(a, b) || 1;
+    return '<div class="kp"><div class="hd"><span class="lbl">' + lbl + '</span>' + chg(b, a, A.d1) + '</div>' +
+      '<div class="ln cpA"><span class="k">A</span><span class="tr"><i style="width:' + (a / mx * 100).toFixed(1) + '%"></i></span><span class="v">' + (dA || f(a)) + '</span></div>' +
+      '<div class="ln cpB"><span class="k">B</span><span class="tr"><i style="width:' + (b / mx * 100).toFixed(1) + '%"></i></span><span class="v">' + (dB || f(b)) + '</span></div></div>';
+  }
+  var s =
+    '<section class="card"><div class="ct"><h2>Períodos</h2></div><p class="desc">Escolha as datas e o corretor de cada lado. O filtro de veículo do topo vale para os dois.</p>' +
+      '<div class="pers">' + painel('ca', A, 'A', 'cpA') + '<span class="vs">VS</span>' + painel('cb', B, 'B', 'cpB') + '</div></section>' +
+    '<section class="card"><div class="ct"><h2>Resumo</h2><span class="sub">variação de B em relação a A</span></div><p class="desc">Os números que mais importam, lado a lado.</p><div class="kps">' +
+      kp('Leads', oa[0], ob[0], fmt.n) + kp('Vendas', oa[7], ob[7], fmt.n) + kp('VGV', oa.vgv, ob.vgv, fmt.mi) + kp('Conversão lead → venda', ca, cb, function (x) { return fmt.pct(x, 1); }) +
+    '</div></section>';
+  s += '<section class="card"><div class="ct"><h2>Funil comparado</h2></div><p class="desc">Cada etapa espelhada: o período A cresce para a esquerda e o B para a direita, na mesma escala. No centro, a variação de B em relação a A; abaixo de cada número, a conversão da etapa anterior (↓ %).</p>' +
+    '<div class="bfl"><div class="bh"><span class="a cpA">Período A<span class="dt"> · ' + faixa(A) + '</span><i></i></span><span class="m">Etapa · variação</span><span class="b cpB"><i></i>Período B<span class="dt"> · ' + faixa(B) + '</span></span></div>';
   FUNIL.forEach(function (m, i) {
-    if (i) {
-      var ca = oa[FUNIL[i - 1]] ? fmt.pct(oa[m] / oa[FUNIL[i - 1]]) : '–', cb = ob[FUNIL[i - 1]] ? fmt.pct(ob[m] / ob[FUNIL[i - 1]]) : '–';
-      s += '<div class="ccv"><span>' + ca + '</span><span></span><span>' + cb + '</span></div>';
-    }
-    var wa = max ? Math.max(oa[m] / max * 100, oa[m] ? 1.2 : 0) : 0, wb = max ? Math.max(ob[m] / max * 100, ob[m] ? 1.2 : 0) : 0, sale = m === 7 ? ' sale' : '';
-    s += '<div class="crow' + sale + '"><div class="cside l frow' + sale + '" style="height:auto"><div class="fval">' + fmt.n(oa[m]) + '</div><div class="ftrack"><div class="fbar" style="width:' + wa + '%"></div></div></div>' +
-      '<div class="cmid' + sale + '"><span class="nm">' + MET[m].n + '</span>' + chg(ob[m], oa[m], A.d1) + '</div>' +
-      '<div class="cside r frow' + sale + '" style="height:auto"><div class="ftrack"><div class="fbar" style="width:' + wb + '%"></div></div><div class="fval">' + fmt.n(ob[m]) + '</div></div></div>';
+    var pa = i ? oa[FUNIL[i - 1]] : 0, pb = i ? ob[FUNIL[i - 1]] : 0;
+    var cva = i ? (pa ? fmt.pct(oa[m] / pa) : '–') : '', cvb = i ? (pb ? fmt.pct(ob[m] / pb) : '–') : '';
+    var wa = max ? Math.max(oa[m] / max * 100, oa[m] ? 1.5 : 0) : 0, wb = max ? Math.max(ob[m] / max * 100, ob[m] ? 1.5 : 0) : 0;
+    s += '<div class="br' + (m === 7 ? ' sale' : '') + '">' +
+      '<span class="vl a"><b>' + fmt.n(oa[m]) + '</b>' + (i ? '<small title="Conversão da etapa anterior">↓ ' + cva + '</small>' : '') + '</span><span class="tk a"><i style="width:' + wa + '%"></i></span>' +
+      '<span class="md"><span class="nm"><em>' + String(i + 1).padStart(2, '0') + '</em>' + MET[m].n + '</span>' + chg(ob[m], oa[m], A.d1) + '</span>' +
+      '<span class="tk b"><i style="width:' + wb + '%"></i></span><span class="vl b"><b>' + fmt.n(ob[m]) + '</b>' + (i ? '<small title="Conversão da etapa anterior">↓ ' + cvb + '</small>' : '') + '</span></div>';
   });
-  s += '<div class="cvgv"><span>VGV <b>' + fmt.mi(oa.vgv) + '</b></span><span style="text-align:center">' + chg(ob.vgv, oa.vgv, A.d1) + '</span><span>VGV <b>' + fmt.mi(ob.vgv) + '</b></span></div>';
-  s += '<p class="note" style="text-align:center;margin-top:18px">A variação no centro mostra B em relação a A. O filtro de veículo do topo vale para os dois lados.</p></section>';
+  s += '<div class="ft"><span class="x a"><small>VGV · A</small><b>' + fmt.mi(oa.vgv) + '</b><span>ticket ' + (oa[7] ? fmt.mi(oa.ticket) : '–') + '</span></span>' +
+    '<span class="md"><span class="nm">VGV</span>' + chg(ob.vgv, oa.vgv, A.d1) + '</span>' +
+    '<span class="x"><small>VGV · B</small><b>' + fmt.mi(ob.vgv) + '</b><span>ticket ' + (ob[7] ? fmt.mi(ob.ticket) : '–') + '</span></span></div></div></section>';
   v.innerHTML = s;
   ['ca', 'cb'].forEach(function (id) {
     var P = FX[id];
