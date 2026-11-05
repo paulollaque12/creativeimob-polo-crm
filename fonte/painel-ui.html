@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04g ranking da performance com cartão de foto e mês anterior -->
+<!-- v2026-11-04h ranking sem barra de rolagem horizontal -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -212,7 +212,8 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .tip.on{opacity:1}
 
 /* ---------- ranking ---------- */
-.rank{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow:auto;padding-right:4px}
+.rank{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto;overflow-x:hidden;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.rank::-webkit-scrollbar{width:6px;height:0}.rank::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}.rank::-webkit-scrollbar-track{background:transparent}
 .rk{display:grid;grid-template-columns:22px minmax(0,130px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px}
 .rk .p{color:var(--ink3);font-variant-numeric:tabular-nums;font-size:12px}
 .rk .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -220,7 +221,7 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .rk .tr i{display:block;height:100%;background:var(--bar);border-radius:3px}
 .rk:first-child .tr i{background:var(--red)}
 .rk .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
-.rk{position:relative;padding:3px 6px;margin:0 -6px;border-radius:7px;cursor:default;transition:background .12s}
+.rk{position:relative;padding:3px 6px;border-radius:7px;cursor:default;transition:background .12s}
 .rank.hov .rk{opacity:.55}.rank.hov .rk.on{opacity:1;background:var(--track)}
 .rk:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .rkcard{position:relative}
@@ -832,11 +833,11 @@ function rPf(v) {
   function var_(a, b) { if (!b) return ''; var x = (a - b) / b; return ' <b class="' + (x >= 0 ? 'up' : 'dn') + '" style="font:600 11.5px var(--body)">' + (x >= 0 ? '+' : '') + fmt.pct(x) + '</b>'; }
   function tipPf(i) {
     var w = sem[i], fimW = Math.min(w[1], ultimo), parcial = w[1] > ultimo && i <= ate, h = '<small>W' + (i + 1) + ' · ' + dd(w[0]) + ' a ' + dd(w[1]) + (parcial ? ' · parcial, até ' + dd(ultimo) : '') + '</small>';
-    if (i > ate) return h + '<b>—</b> <span>semana ainda por vir</span>' + (ant[i] != null ? '<span class="ln2">' + mesA + ' (W' + (i + 1) + '): ' + fmt.n(ant[i]) + ' ' + mN + '</span>' : '');
+    if (i > ate) return h + '<b>—</b> <span>semana ainda por vir</span>' + (ant[i] != null ? '<span class="ln2">vs ' + dd(semA[i][0]) + ' → ' + dd(semA[i][1]) + ': ' + fmt.n(ant[i]) + ' ' + mN + '</span>' : '');
     h += '<b>' + fmt.n(tot[i]) + '</b> <span>' + mN + '</span>';
-    if (ant[i] != null) h += '<span class="ln2">' + mesA + ' (W' + (i + 1) + '): ' + fmt.n(ant[i]) + var_(tot[i], ant[i]) + '</span>';
+    if (ant[i] != null) h += '<span class="ln2">vs ' + dd(semA[i][0]) + ' → ' + dd(semA[i][1]) + ': ' + fmt.n(ant[i]) + var_(tot[i], ant[i]) + '</span>';
     var ac = acum(L, d1, fimW), off = fimW - d1, acA = acum(LA, pd1, Math.min(pd1 + off, pd2));
-    h += '<span class="ln2">Acumulado até ' + dd(fimW) + ': ' + fmt.n(ac) + ' · ' + mesA + ' nos mesmos ' + (off + 1) + ' dias: ' + fmt.n(acA) + var_(ac, acA) + '</span>';
+    h += '<span class="ln2">Acumulado ' + dd(d1) + ' → ' + dd(fimW) + ': ' + fmt.n(ac) + ' · vs ' + dd(pd1) + ' → ' + dd(Math.min(pd1 + off, pd2)) + ': ' + fmt.n(acA) + var_(ac, acA) + '</span>';
     return h;
   }
   // Ranking: ao passar o mouse, cartão com foto do Vista, posição, valor e comparação com o mês anterior nos mesmos dias
@@ -851,7 +852,7 @@ function rPf(v) {
     var mv = !a ? '<span class="mv nv">NOVO</span>' : a.pos > pos ? '<span class="mv up">▲ ' + (a.pos - pos) + (a.pos - pos === 1 ? ' posição' : ' posições') + '</span>' : a.pos < pos ? '<span class="mv dn">▼ ' + (pos - a.pos) + (pos - a.pos === 1 ? ' posição' : ' posições') + '</span>' : '<span class="mv eq">= mesma posição</span>';
     rtip.innerHTML = '<div class="fo' + (pos <= 3 ? ' l' + pos : '') + '">' + esc(ini(r.nome)) + (ft ? '<img src="' + esc(ft) + '" alt="" onerror="this.remove()">' : '') + '</div>' +
       '<div class="tx"><b>' + esc(r.nome) + '</b><small>' + pos + 'º lugar · ' + fmt.n(r.tot) + ' ' + mN + (totM ? ' · ' + fmt.pct(r.tot / totM) + ' do total' : '') + '</small>' +
-      '<span>' + mesA.charAt(0).toUpperCase() + mesA.slice(1) + (fimR === sem[sem.length - 1][1] ? ' (mês inteiro): ' : ', mesmos ' + diasR + ' dias: ') + (a ? fmt.n(a.tot) + ' · ' + a.pos + 'º lugar' + var_(r.tot, a.tot) : 'sem registros') + '</span>' + mv + '</div>';
+      '<span>vs ' + dd(pd1) + ' → ' + dd(peR) + ': ' + (a ? fmt.n(a.tot) + ' · ' + a.pos + 'º lugar' + var_(r.tot, a.tot) : 'sem registros') + '</span>' + mv + '</div>';
     var row = rankEl.querySelector('[data-rk="' + i + '"]'), cr = rtip.parentNode.getBoundingClientRect(), rr = row.getBoundingClientRect();
     var top = rr.bottom - cr.top + 6; if (top + rtip.offsetHeight > cr.height - 8) top = rr.top - cr.top - rtip.offsetHeight - 6;
     rtip.style.top = top + 'px'; rtip.style.left = Math.max(16, Math.min(rr.left - cr.left + 28, cr.width - rtip.offsetWidth - 16)) + 'px';
