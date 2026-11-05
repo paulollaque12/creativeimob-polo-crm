@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04m comparativo sem o bloco Resumo -->
+<!-- v2026-11-04n financeiro redesenhado: KPIs com ícone, evolução com métricas à direita, tabelas padronizadas com fotos -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -420,6 +420,42 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .kpi .big{font-size:34px}
 .deal td:nth-child(2){color:var(--ink2)}
+/* ===== Financeiro (v2) ===== */
+.fks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.fk{position:relative;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.fk .ic{position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--track);color:var(--ink2)}
+.fk .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.fk .big{font-size:30px;margin:4px 0 2px}
+.fk .vs2{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.fk .vs2 b{color:var(--ink2);font-weight:600}
+.fk.hl{border-color:rgba(176,18,28,.55);background:linear-gradient(160deg,rgba(176,18,28,.16),rgba(176,18,28,0) 60%),var(--surface)}
+.fk.hl .ic{background:var(--red);color:#fff}
+.fk .who{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dims.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dims.c3 .dm{padding:10px 12px;gap:10px}.dims.c3 .dm .ic{width:30px;height:30px}.dims.c3 .dm .tx small{display:none}
+#tfi,#tdl{width:100%;table-layout:fixed}
+#tfi th:nth-child(1){width:30%}#tfi th:nth-child(2){width:13%}#tfi th:nth-child(3){width:20%}#tfi th:nth-child(4){width:19%}#tfi th:nth-child(5){width:18%}
+#tdl th:nth-child(1){width:21%}#tdl th:nth-child(2){width:33%}#tdl th:nth-child(3){width:23%}#tdl th:nth-child(4){width:23%}
+#tfi td,#tdl td{overflow:hidden;text-overflow:ellipsis}
+#tfi th,#tfi td,#tdl th,#tdl td{padding-left:6px;padding-right:6px}
+.fk .chg{align-self:flex-start}
+#tfi th,#tfi td,#tdl th,#tdl td{text-align:center}
+#tfi th:first-child,#tfi td:first-child{text-align:left}
+#tdl th:nth-child(2),#tdl td:nth-child(2){text-align:left}
+#tfi .sh2{display:inline-flex;align-items:center;gap:6px;justify-content:center}
+#tfi .sh2 i{display:block;width:30px;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+#tfi .sh2 i b{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--bar2),var(--bar))}
+#tfi .sh2 span{width:38px;text-align:right;color:var(--ink3);font-size:11.5px}
+.cr{display:flex;align-items:center;gap:8px;min-width:0}
+.cr .av2{position:relative;flex:none;width:24px;height:24px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font:600 9.5px var(--display);background:var(--track);color:var(--ink3)}
+.cr .av2+.av2{margin-left:-14px;box-shadow:0 0 0 2px var(--surface)}
+.cr .av2 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cr span.n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+#tdl .vl2{font-weight:600}
+#tdl .im{color:var(--ink2)}#tdl .im small{display:block;color:var(--ink3);font-size:11px}
+.g-fi{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+@media (max-width:1180px){.fks{grid-template-columns:repeat(2,minmax(0,1fr))}.g-fi{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.fks{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- estados ---------- */
 .state{display:flex;flex-direction:column;align-items:flex-start;gap:12px;max-width:560px;padding:40px 0}
@@ -1111,37 +1147,64 @@ function rCp(v) {
 }
 
 /* ---------- Financeiro ---------- */
+var ICF = {
+  vgv: '<path d="M4 7h16v10H4z"/><circle cx="12" cy="12" r="2.6"/><path d="M7 10v4M17 10v4"/>',
+  vend: '<path d="M8.5 12.5l2.5 2.5 5-5.5"/><circle cx="12" cy="12" r="8.5"/>',
+  tk: '<path d="M20 12.5l-7.5 7.5L4 11.5V4h7.5z"/><circle cx="8" cy="8" r="1.4"/>',
+  top: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5.5a2.5 2.5 0 0 0 3 3.5M16 6h2.5a2.5 2.5 0 0 1-3 3.5M12 13v4M8.5 20h7M10 17h4"/>'
+};
 function rFi(v) {
   var f = F(), o = funil(C, FX.d1, FX.d2, f), pa = anterior(FX.d1, FX.d2), p = funil(C, pa[0], pa[1], f), dk = ST.fid, dim = dimBy(dk);
   var rows = porDim(C, 7, FX.d1, FX.d2, f, dk).map(function (g) { var vv = vgv(g.L); return { nome: g.nome, n: g.n, vgv: vv, tk: g.n ? vv / g.n : 0 }; });
-  var cols = { nome: { v: function (r) { return r.nome; }, tipo: 's' }, n: { v: function (r) { return r.n; } }, vgv: { v: function (r) { return r.vgv; } }, tk: { v: function (r) { return r.tk; } } };
+  var cols = { nome: { v: function (r) { return r.nome; }, tipo: 's' }, n: { v: function (r) { return r.n; } }, vgv: { v: function (r) { return r.vgv; } }, sh: { v: function (r) { return r.vgv; } }, tk: { v: function (r) { return r.tk; } } };
   var s = ordenar('fi', rows, cols, { k: 'vgv', asc: false });
   var gran = granDe(FX.d1, FX.d2), gran2 = granAtual(gran === 'dia' ? 'sem' : gran);
+  function dm(i) { return rotulo(i, 'dia'); }
+  var vsTxt = 'vs ' + dm(pa[0]) + ' → ' + dm(pa[1]);
   // negócios ganhos do período
-  var neg = {}; linhas(C, 7, FX.d1, FX.d2, f).forEach(function (e) { var n = neg[e.x] = neg[e.x] || { e: e, cor: [] }; var nm = C.k.cor[e.r]; if (nm && n.cor.indexOf(nm) < 0) n.cor.push(nm); });
+  var neg = {}; linhas(C, 7, FX.d1, FX.d2, f).forEach(function (e) { var n = neg[e.x] = neg[e.x] || { e: e, cor: [], rs: [] }; var nm = C.k.cor[e.r]; if (nm && n.cor.indexOf(nm) < 0) { n.cor.push(nm); n.rs.push(e.r); } });
   var dl = Object.keys(neg).map(function (k) { return neg[k]; }).sort(function (a, b) { return b.e.d - a.e.d || b.e.val - a.e.val; });
+  var maior = dl.slice().sort(function (a, b) { return b.e.val - a.e.val; })[0];
   var vistosImo = {};
+  function ini(nm) { return nm.split(/\s+/).map(function (q) { return q[0] || ''; }).slice(0, 2).join('').toUpperCase(); }
+  function avs(n) { return n.rs.slice(0, 3).map(function (r, k) { var ft = (C.k.fot || [])[r]; return '<span class="av2" title="' + esc(n.cor[k]) + '">' + esc(ini(n.cor[k])) + (ft ? '<img src="' + esc(ft) + '" alt="" onerror="this.remove()">' : '') + '</span>'; }).join(''); }
+  function fk(cls, ic, lbl, val, a, b, extra) {
+    return '<section class="card fk' + cls + '"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICF[ic] + '</svg></span><div class="lbl">' + lbl + '</div><div class="big">' + val + '</div>' +
+      (extra || (chg(a, b, pa[0]) + (variacao(a, b, pa[0]) === null && !b ? '<div class="vs2">sem dados antes de 01/01/2026</div>' : '<div class="vs2">' + vsTxt + ': <b>' + (ic === 'vend' ? fmt.n(b) : b ? fmt.mi(b) : '–') + '</b></div>'))) + '</section>';
+  }
+  // Evolução: VGV, Vendas ou Ticket médio
+  if (!ST.fim) ST.fim = 'vgv';
+  var FIM = [['vgv', 'VGV'], ['vend', 'Vendas'], ['tk', 'Ticket médio']];
   v.innerHTML =
-    '<div class="kpis">' +
-      '<section class="card kpi"><div class="lbl">Vendas</div><div class="big">' + fmt.n(o[7]) + '</div>' + chg(o[7], p[7], pa[0]) + '</section>' +
-      '<section class="card kpi"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</section>' +
-      '<section class="card kpi"><div class="lbl">Ticket médio</div><div class="big">' + (o[7] ? fmt.mi(o.ticket) : '–') + '</div>' + chg(o.ticket, p.ticket, pa[0]) + '</section>' +
+    '<div class="fks">' +
+      fk(' hl', 'vgv', 'VGV', fmt.mi(o.vgv), o.vgv, p.vgv) +
+      fk('', 'vend', 'Vendas', fmt.n(o[7]), o[7], p[7]) +
+      fk('', 'tk', 'Ticket médio', o[7] ? fmt.mi(o.ticket) : '–', o.ticket, p.ticket) +
+      fk('', 'top', 'Maior venda', maior ? fmt.mi(maior.e.val) : '–', 0, 0, maior ? '<div class="who">' + esc(maior.cor.join(', ') || '–') + '</div><div class="vs2">' + esc(maior.e.imo || '') + (C.k.bai[maior.e.b] ? ' · ' + esc(C.k.bai[maior.e.b]) : '') + ' · ' + fmt.data(maior.e.d) + '</div>' : '<div class="vs2">Nenhuma venda no período.</div>') +
     '</div>' +
-    '<section class="card"><div class="ct"><h2>Evolução do VGV</h2><div class="ctl2">' + segTipo() + segGran(gran2) + '</div></div>' + '<p class="desc">Valor vendido ao longo do período, somando um valor por imóvel vendido. Agrupe por dia, semana ou mês.</p>' + '<div class="chart" id="fiv"></div></section>' +
-    '<div class="grid g-2">' +
-    '<section class="card"><div class="ct"><h2>VGV por</h2><div class="chips">' + DIMS.map(function (d) { return '<button class="pill" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div>' + '<p class="desc">Vendas, VGV e ticket médio abertos pela dimensão escolhida.</p>' +
-      '<div class="tw"><table><thead><tr>' + th('fi', 'nome', dim.n, s) + th('fi', 'n', 'Vendas', s) + th('fi', 'vgv', 'VGV', s) + th('fi', 'tk', 'Ticket médio', s) + '</tr></thead><tbody>' +
-      (rows.length ? rows.map(function (r) { return '<tr><td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td><td>' + fmt.n(r.n) + '</td><td>' + fmt.brl(r.vgv) + '</td><td>' + fmt.brl(r.tk) + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Nenhuma venda no período.</td></tr>') +
-      '</tbody><tfoot><tr><td>Total</td><td>' + fmt.n(o[7]) + '</td><td>' + fmt.brl(o.vgv) + '</td><td>' + fmt.brl(o.ticket) + '</td></tr></tfoot></table></div>' +
+    '<section class="card"><div class="ct" style="margin-bottom:6px"><h2>Evolução financeira</h2><div class="ctl2">' + segTipo() + segGran(gran2) + '</div></div>' +
+      '<p class="desc">VGV, vendas ou ticket médio ao longo do período. Escolha a métrica à direita e agrupe por dia, semana ou mês.</p>' +
+      '<div class="evo"><div><p class="cap">' + FIM.filter(function (x) { return x[0] === ST.fim; })[0][1] + ' por ' + ({ dia: 'dia', sem: 'semana', mes: 'mês' })[gran2] + '</p><div class="chart" id="fiv"></div></div>' +
+      '<div class="mlist" role="group" aria-label="Métrica" style="align-self:center">' + FIM.map(function (x) { return '<button data-fim="' + x[0] + '" aria-pressed="' + (x[0] === ST.fim) + '">' + x[1] + '</button>'; }).join('') + '</div></div></section>' +
+    '<div class="grid g-fi">' +
+    '<section class="card"><div class="ct"><h2>VGV por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div><p class="desc">Vendas, VGV, participação e ticket médio abertos pela dimensão escolhida.</p>' +
+      '<div class="dims c3" role="group" aria-label="Dimensão" style="margin-bottom:16px">' + DIMS.map(function (d) { return '<button class="dm" data-fid="' + d.k + '" aria-pressed="' + (d.k === dk) + '"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICD[d.k] + '</svg></span><span class="tx"><b>' + d.n + '</b></span></button>'; }).join('') + '</div>' +
+      '<div class="tw alta"><table id="tfi"><thead><tr>' + th('fi', 'nome', dim.n, s) + th('fi', 'n', 'Vendas', s) + th('fi', 'vgv', 'VGV', s) + th('fi', 'sh', 'Part.', s) + th('fi', 'tk', 'Ticket', s) + '</tr></thead><tbody>' +
+      (rows.length ? rows.map(function (r) { var sh = o.vgv ? r.vgv / o.vgv : 0; return '<tr><td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td><td>' + fmt.n(r.n) + '</td><td><b style="font-weight:600">' + fmt.mi(r.vgv) + '</b></td><td><span class="sh2"><i><b style="width:' + Math.min(100, sh * 100).toFixed(1) + '%"></b></i><span>' + fmt.pct(sh) + '</span></span></td><td>' + fmt.mi(r.tk) + '</td></tr>'; }).join('') : '<tr><td colspan="5" class="empty">Nenhuma venda no período.</td></tr>') +
+      '</tbody><tfoot><tr><td>Total</td><td>' + fmt.n(o[7]) + '</td><td>' + fmt.mi(o.vgv) + '</td><td>' + (o.vgv ? '100%' : '–') + '</td><td>' + (o[7] ? fmt.mi(o.ticket) : '–') + '</td></tr></tfoot></table></div>' +
       '<p class="note">Venda dividida entre corretores conta para cada um; o total conta uma vez. O VGV soma um valor por imóvel vendido, como no Power BI.</p></section>' +
-    '<section class="card"><div class="ct"><h2>Negócios ganhos</h2><span class="sub">' + dl.length + ' no período</span></div>' + '<p class="desc">Cada venda do período, da mais recente para a mais antiga.</p>' +
-      '<div class="tw"><table class="deal"><thead><tr><th style="cursor:default">Data</th><th style="cursor:default;text-align:left">Corretor</th><th style="cursor:default">Imóvel</th><th style="cursor:default">Valor</th></tr></thead><tbody>' +
-      (dl.length ? dl.map(function (n) { var k = n.e.imo || ('n' + n.e.x), rep = vistosImo[k]; vistosImo[k] = 1; return '<tr><td style="text-align:left">' + fmt.data(n.e.d) + '</td><td style="text-align:left">' + esc(n.cor.join(', ') || '–') + '</td><td>' + esc(n.e.imo || '–') + (C.k.bai[n.e.b] ? ' <span style="color:var(--ink3)">· ' + esc(C.k.bai[n.e.b]) + '</span>' : '') + '</td><td>' + fmt.brl(n.e.val) + (rep ? ' <span title="Mesmo imóvel de outro negócio: entra uma vez no VGV" style="color:var(--ink3)">*</span>' : '') + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Nenhuma venda no período.</td></tr>') +
+    '<section class="card"><div class="ct"><h2>Negócios ganhos</h2><span class="sub">' + dl.length + (dl.length === 1 ? ' venda' : ' vendas') + ' no período</span></div><p class="desc">Cada venda do período, da mais recente para a mais antiga.</p>' +
+      '<div class="tw alta"><table id="tdl" class="deal"><thead><tr><th style="cursor:default">Data</th><th style="cursor:default">Corretor</th><th style="cursor:default">Imóvel</th><th style="cursor:default">Valor</th></tr></thead><tbody>' +
+      (dl.length ? dl.map(function (n) { var k = n.e.imo || ('n' + n.e.x), rep = vistosImo[k]; vistosImo[k] = 1; return '<tr><td>' + fmt.data(n.e.d) + '</td><td><span class="cr">' + avs(n) + '<span class="n" title="' + esc(n.cor.join(', ')) + '">' + esc(n.cor.join(', ') || '–') + '</span></span></td><td class="im">' + esc(n.e.imo || '–') + (C.k.bai[n.e.b] ? '<small>' + esc(C.k.bai[n.e.b]) + '</small>' : '') + '</td><td class="vl2">' + fmt.brl(n.e.val) + (rep ? ' <span title="Mesmo imóvel de outro negócio: entra uma vez no VGV" style="color:var(--ink3)">*</span>' : '') + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty">Nenhuma venda no período.</td></tr>') +
       '</tbody></table></div>' + (Object.keys(vistosImo).length < dl.length ? '<p class="note">* Mesmo imóvel de outro negócio do período: conta como venda, mas entra uma vez no VGV.</p>' : '') + '</section></div>';
   v.querySelectorAll('[data-fid]').forEach(function (b) { b.onclick = function () { ST.fid = b.dataset.fid; delete ST.srt.fi; render(); }; });
+  v.querySelectorAll('[data-fim]').forEach(function (b) { b.onclick = function () { ST.fim = b.dataset.fim; render(); }; });
   ligarOrdenacao(v, 'fi', cols, render);
   ligarGran(v); ligarTipo(v);
-  barras($('#fiv'), serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv').map(function (p) { return { l: rotulo(p.k, gran2), t: rotuloLongo(p.k, gran2), v: p.v }; }), { label: 'Evolução do VGV', tipo: ST.tipo, un: 'de VGV', fmtV: fmt.mi, fmtAx: function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
+  var sv = serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv'), sn = serie(C, 7, FX.d1, FX.d2, f, gran2, null);
+  var pts = sv.map(function (q, i) { var val = ST.fim === 'vgv' ? q.v : ST.fim === 'vend' ? sn[i].v : (sn[i].v ? q.v / sn[i].v : 0); return { l: rotulo(q.k, gran2), t: rotuloLongo(q.k, gran2), v: val }; });
+  var ehN = ST.fim === 'vend';
+  barras($('#fiv'), pts, { label: 'Evolução financeira', tipo: ST.tipo, h: $('#fiv').clientWidth < 600 ? 260 : 300, un: ehN ? 'vendas' : ST.fim === 'tk' ? 'de ticket médio' : 'de VGV', fmtV: ehN ? fmt.n : fmt.mi, fmtAx: ehN ? fmt.n : function (t) { return (t / 1e6).toLocaleString('pt-BR') + ' Mi'; } });
 }
 
 /* ---------- render ---------- */
