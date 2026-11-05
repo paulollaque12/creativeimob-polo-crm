@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04o financeiro: VGV por e Negócios ganhos com altura fixa -->
+<!-- v2026-11-04p financeiro: tabelas com 5 linhas + total -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -465,10 +465,9 @@ td .bm{display:inline-block;height:6px;background:var(--barsoft);border-radius:2
 #tdl .vl2{font-weight:600}
 #tdl .im{color:var(--ink2)}#tdl .im small{display:block;color:var(--ink3);font-size:11px}
 .g-fi{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
-.g-fi>section{height:640px;display:flex;flex-direction:column}
-.g-fi .tw.alta{flex:1;min-height:0;max-height:none}
-.g-fi .note{margin-top:12px}
-@media (max-width:1180px){.g-fi>section{height:auto}.g-fi .tw.alta{flex:none;max-height:430px}}
+.g-fi>section{display:flex;flex-direction:column}
+.g-fi .tw.alta{flex:none;max-height:none}
+.g-fi .note{margin-top:auto;padding-top:12px}
 @media (max-width:1180px){.fks{grid-template-columns:repeat(2,minmax(0,1fr))}.g-fi{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:620px){.fks{grid-template-columns:minmax(0,1fr)}}
 
@@ -1473,6 +1472,12 @@ function rFi(v) {
   v.querySelectorAll('[data-fim]').forEach(function (b) { b.onclick = function () { ST.fim = b.dataset.fim; render(); }; });
   ligarOrdenacao(v, 'fi', cols, render);
   ligarGran(v); ligarTipo(v);
+  // Tabelas com altura padrão: cabeçalho + 5 linhas (+ total); mais linhas rolam por dentro
+  v.querySelectorAll('.g-fi .tw.alta').forEach(function (w) {
+    var t = w.querySelector('table'), hd = t.tHead ? t.tHead.offsetHeight : 36, ft = t.tFoot ? t.tFoot.offsetHeight : 0, r = t.tBodies[0] && t.tBodies[0].rows[0];
+    var rh = r && !r.querySelector('.empty') ? r.offsetHeight : (t.id === 'tdl' ? 54 : 38);
+    w.style.height = Math.round(hd + 5 * rh + ft + 2) + 'px';
+  });
   var sv = serie(C, 7, FX.d1, FX.d2, f, gran2, 'vgv'), sn = serie(C, 7, FX.d1, FX.d2, f, gran2, null);
   var pts = sv.map(function (q, i) { var val = ST.fim === 'vgv' ? q.v : ST.fim === 'vend' ? sn[i].v : (sn[i].v ? q.v / sn[i].v : 0); return { l: rotulo(q.k, gran2), t: rotuloLongo(q.k, gran2), v: val }; });
   var ehN = ST.fim === 'vend';
