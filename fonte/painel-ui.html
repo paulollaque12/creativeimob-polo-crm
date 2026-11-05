@@ -1,6 +1,6 @@
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-11-04i tabela de performance compacta, centralizada, semanas futuras esmaecidas -->
+<!-- v2026-11-04j exploração: dimensões com ícones, métricas à direita, tabela padronizada -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -220,6 +220,35 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .tw.alta tfoot td:first-child{z-index:2}
 #tpf th:not(:first-child),#tpf td:not(:first-child){text-align:center}
 #tpf .fu{opacity:.4}
+/* Exploração · tabela "Funil por": métricas e conversões com larguras fixas e centralizadas */
+#tex{width:max-content;min-width:100%}
+#tex th,#tex td{text-align:center}
+#tex th:first-child,#tex td:first-child{text-align:left;min-width:200px;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+#tex .mc{width:96px;min-width:96px}
+#tex .cv{width:58px;min-width:58px}
+#tex .vg{width:116px;min-width:116px}
+#tex thead th{white-space:normal;line-height:1.3;vertical-align:bottom}
+/* Exploração · dimensões com ícone */
+.dims{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.dm{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);min-width:0;transition:border-color .15s,background .15s,transform .15s}
+.dm:hover{border-color:var(--ink3);transform:translateY(-1px)}
+.dm .ic{flex:none;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--track);color:var(--ink2);transition:background .15s,color .15s}
+.dm .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.dm .tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.dm .tx b{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.dm .tx small{font-size:11px;color:var(--ink3)}
+.dm::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;border-radius:2px;background:var(--red);transform:scaleX(0);transition:transform .2s}
+.dm[aria-pressed="true"]{border-color:var(--red);background:linear-gradient(180deg,rgba(176,18,28,.14),rgba(176,18,28,.03))}
+.dm[aria-pressed="true"]::after{transform:scaleX(1)}
+.dm[aria-pressed="true"] .ic{background:var(--red);color:#fff}
+.dm:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+@media (max-width:1180px){.dims{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:620px){.dims{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Exploração · participação: rosca | tabela | métricas à direita */
+.pz3{display:grid;grid-template-columns:240px minmax(0,1fr) 196px;gap:24px 40px;align-items:center}
+.pz3 .donut{justify-self:center}
+@media (max-width:1180px){.pz3{grid-template-columns:220px minmax(0,1fr)}.pz3 .mlist{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap;order:-1}.pz3 .mlist .lb{display:none}.pz3 .mlist button{padding:0 12px}}
+@media (max-width:760px){.pz3{grid-template-columns:minmax(0,1fr)}}
 .rank::-webkit-scrollbar{width:6px;height:0}.rank::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}.rank::-webkit-scrollbar-track{background:transparent}
 .rk{display:grid;grid-template-columns:22px minmax(0,130px) minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px}
 .rk .p{color:var(--ink3);font-variant-numeric:tabular-nums;font-size:12px}
@@ -911,6 +940,14 @@ function rosca(el, segs, soma, rot, legenda) {
   legenda.forEach(function (l) { l.onmouseenter = function () { liga(+l.dataset.sg); }; l.onmouseleave = desliga; });
 }
 var PALS = ['var(--red)', '#7c0e15', '#e0767c', '#8d8984', '#f0b3b6', '#5e5b57', '#c9c6c1'];
+var ICD = {
+  cor: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-3.6 3.9-5.5 7.5-5.5s6.7 1.9 7.5 5.5"/>',
+  vei: '<path d="M4 10.5v3a1 1 0 0 0 1 1h2.2l5.3 4V5.5L7.2 9.5H5a1 1 0 0 0-1 1z"/><path d="M16 9a4.2 4.2 0 0 1 0 6M18.6 6.5a8 8 0 0 1 0 11"/>',
+  bai: '<path d="M12 21s-6.5-5.8-6.5-10.8a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"/><circle cx="12" cy="10.2" r="2.4"/>',
+  cat: '<path d="M3.5 20.5h17M5.5 20.5V6.5l7-3v17M12.5 9.5h6v11M8.5 8.5h1.5M8.5 12h1.5M8.5 15.5h1.5M15 13h1.5M15 16.5h1.5"/>',
+  dor: '<path d="M3.5 18.5v-12M3.5 14.5h17v4M20.5 14.5v-2.5a3 3 0 0 0-3-3h-7v5.5"/><circle cx="7" cy="11.5" r="1.6"/>',
+  are: '<rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 2.6"/><path d="M8.5 15.5l7-7M11.5 8.5h4v4"/>'
+};
 function rEx(v) {
   var f = F(), dk = ST.exd, dim = dimBy(dk), m = ST.exm;
   var grupos = {}, METS = FUNIL.concat(dim.semImovel ? [] : [8]);
@@ -931,35 +968,37 @@ function rEx(v) {
   var s = (ST.srt['ex'] || def) ? ordenar('ex', rows, cols, def || { k: 'm' + m, asc: false }) : null;
   var mxL = 0; rows.forEach(function (r) { if (r.c[0] > mxL) mxL = r.c[0]; });
   var head = th('ex', 'nome', dim.n, s);
-  FUNIL.forEach(function (mm, i) { if (i) head += '<th class="cv" title="Conversão da etapa anterior">→%</th>'; head += th('ex', 'm' + mm, MET[mm].n, s); });
-  head += th('ex', 'vgv', 'VGV', s) + th('ex', 'm8', 'Agenc.', s);
+  FUNIL.forEach(function (mm, i) { if (i) head += '<th class="cv" title="Conversão da etapa anterior">→%</th>'; head += th('ex', 'm' + mm, MET[mm].n, s, 'mc'); });
+  head += th('ex', 'vgv', 'VGV', s, 'vg') + th('ex', 'm8', 'Agenc.', s, 'mc');
   function cel(r) {
     var h = '<td title="' + esc(r.nome) + '">' + esc(r.nome) + '</td>';
     FUNIL.forEach(function (mm, i) {
       if (i) { var a = r.c[FUNIL[i - 1]]; h += '<td class="cv">' + (a ? fmt.pct(r.c[mm] / a) : '') + '</td>'; }
-      h += '<td>' + (mm === 0 && mxL ? '<span class="bm" style="width:' + (r.c[0] / mxL * 42) + 'px"></span>' : '') + (r.c[mm] ? fmt.n(r.c[mm]) : '<span style="color:var(--ink3)">·</span>') + '</td>';
+      h += '<td class="mc">' + (r.c[mm] ? fmt.n(r.c[mm]) : '<span style="color:var(--ink3)">·</span>') + '</td>';
     });
-    return h + '<td>' + (r.vgv ? fmt.mi(r.vgv) : '<span style="color:var(--ink3)">·</span>') + '</td>' + '<td>' + (dim.semImovel ? '<span style="color:var(--ink3)" title="Imóveis não têm veículo de captação">–</span>' : r.c[8] ? fmt.n(r.c[8]) : '<span style="color:var(--ink3)">·</span>') + '</td>';
+    return h + '<td class="vg">' + (r.vgv ? fmt.mi(r.vgv) : '<span style="color:var(--ink3)">·</span>') + '</td>' + '<td class="mc">' + (dim.semImovel ? '<span style="color:var(--ink3)" title="Imóveis não têm veículo de captação">–</span>' : r.c[8] ? fmt.n(r.c[8]) : '<span style="color:var(--ink3)">·</span>') + '</td>';
   }
   var foot = '<td>Total</td>'; FUNIL.forEach(function (mm, i) { if (i) foot += '<td class="cv">' + (tot[FUNIL[i - 1]] ? fmt.pct(tot[mm] / tot[FUNIL[i - 1]]) : '') + '</td>'; foot += '<td>' + fmt.n(tot[mm]) + '</td>'; });
   foot += '<td>' + fmt.mi(tot.vgv) + '</td>' + '<td>' + (dim.semImovel ? '<span style="color:var(--ink3)">–</span>' : fmt.n(tot[8])) + '</td>';
   v.innerHTML =
-    '<section class="card" style="padding-block:14px"><div class="ct" style="margin:0"><h2>Analisar por</h2><div class="chips">' +
-      DIMS.map(function (d) { return '<button class="pill" data-exd="' + d.k + '" aria-pressed="' + (d.k === dk) + '">' + d.n + '</button>'; }).join('') + '</div></div></section>' +
-    '<section class="card"><div class="ct"><h2>Participação</h2>' + chipsMet([0, 1, 2, 3, 4, 5, 6, 7, 8], m, 'data-exm') + '</div>' + '<p class="desc">Quanto cada ' + (dk === 'cor' ? 'corretor' : dim.n.toLowerCase()) + ' representa no total da métrica escolhida. Passe o mouse no gráfico ou na tabela.</p>' +
-      (soma ? '<div class="pz"><div class="donut" id="dn"></div>' +
+    '<section class="card"><div class="ct"><h2>Analisar por</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' +
+      '<p class="desc">Escolha como abrir os números. A participação e o funil abaixo mudam juntos.</p><div class="dims" role="group" aria-label="Dimensão">' +
+      DIMS.map(function (d) { var q = (m === 8 && d.semImovel) ? 0 : porDim(C, m, FX.d1, FX.d2, f, d.k).filter(function (g) { return g.nome !== 'Sem informação' && g.nome !== 'Sem corretor'; }).length, un = { cor: ['corretor', 'corretores'], vei: ['veículo', 'veículos'], bai: ['bairro', 'bairros'], cat: ['tipologia', 'tipologias'], dor: ['faixa', 'faixas'], are: ['faixa', 'faixas'] }[d.k]; return '<button class="dm" data-exd="' + d.k + '" aria-pressed="' + (d.k === dk) + '"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICD[d.k] + '</svg></span><span class="tx"><b>' + d.n + '</b><small>' + (q ? q + ' ' + un[q === 1 ? 0 : 1] : 'sem dados') + '</small></span></button>'; }).join('') + '</div></section>' +
+    '<section class="card"><div class="ct"><h2>Participação</h2><span class="sub">' + MET[m].n + '</span></div>' + '<p class="desc">Quanto cada ' + (dk === 'cor' ? 'corretor' : dim.n.toLowerCase()) + ' representa no total da métrica escolhida. Passe o mouse no gráfico ou na tabela.</p>' +
+      '<div class="pz3">' + (soma ? '<div class="donut" id="dn"></div>' +
         '<div class="lg"><div class="lh"><span></span><span>' + esc(dim.n) + '</span><span></span><span class="vv"><span>Qtd.</span><span>%</span></span></div>' +
-        segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="vv"><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></span></div>'; }).join('') + '</div></div>' +
-        (resto.length ? '<p class="note">“Outros” soma ' + resto.length + ' ' + (resto.length === 1 ? 'item' : 'itens') + ' menores; todos aparecem na tabela abaixo.</p>' : '')
-      : m === 8 && dim.semImovel ? '<div class="empty"><b style="font:600 30px var(--display);color:var(--ink3)">–</b><br>Agenciamentos não têm veículo de captação.</div>'
-      : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' no período.</div>') +
+        segs.map(function (g, i) { var mx = Math.max.apply(null, segs.map(function (x) { return x.n; })) || 1; return '<div class="lr' + (i === top.length ? ' out' : '') + '" data-sg="' + i + '"><i style="background:' + g.c + '"></i><span class="nm" title="' + esc(g.nome) + '">' + esc(g.nome) + '</span><span class="tr"><b style="width:' + (g.n / mx * 100).toFixed(1) + '%;background:' + g.c + '"></b></span><span class="vv"><span class="n">' + fmt.n(g.n) + '</span><span class="pc">' + fmt.pct(g.n / soma) + '</span></span></div>'; }).join('') + '</div>' +
+        ''
+      : '<div style="grid-column:1 / span 2">' + (m === 8 && dim.semImovel ? '<div class="empty"><b style="font:600 30px var(--display);color:var(--ink3)">–</b><br>Agenciamentos não têm veículo de captação.</div>'
+      : '<div class="empty">Nenhum registro de ' + MET[m].n.toLowerCase() + ' no período.</div>') + '</div>') +
+      '<div class="mlist" role="group" aria-label="Métrica"><p class="lb">Métricas</p>' + [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (k) { return '<button data-exm="' + k + '" aria-pressed="' + (k === m) + '">' + MET[k].n + '</button>'; }).join('') + '</div></div>' + (soma && resto.length ? '<p class="note">“Outros” soma ' + resto.length + ' ' + (resto.length === 1 ? 'item' : 'itens') + ' menores; todos aparecem na tabela abaixo.</p>' : '') +
     '</section>' +
     '<section class="card"><div class="ct"><h2>Funil por ' + dim.n.toLowerCase() + '</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' + '<p class="desc">O funil completo de cada linha, com a conversão entre as etapas, o VGV e os agenciamentos. Clique no cabeçalho para ordenar.</p>' +
-      '<div class="tw"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + cel(r) + '</tr>'; }).join('') + '</tbody><tfoot><tr>' + foot + '</tr></tfoot></table></div>' +
+      '<div class="tw alta"><table id="tex"><thead><tr>' + head + '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + cel(r) + '</tr>'; }).join('') + '</tbody><tfoot><tr>' + foot + '</tr></tfoot></table></div>' +
       '<p class="note">' + (dk === 'cor' ? 'Um cliente atendido por mais de um corretor conta para cada um; o total conta uma vez.' : dk === 'vei' ? 'Imóveis não têm veículo de captação, por isso Agenciamentos aparece como “–” nesta visão.' : 'Atributos do imóvel ligado ao card (leads: o primeiro imóvel de interesse). Registros sem imóvel aparecem como “Sem informação”.') + '</p></section>';
   v.querySelectorAll('[data-exd]').forEach(function (b) { b.onclick = function () { ST.exd = b.dataset.exd; delete ST.srt.ex; render(); }; });
   v.querySelectorAll('[data-exm]').forEach(function (b) { b.onclick = function () { ST.exm = +b.dataset.exm; render(); }; });
-  if (soma) { rosca($('#dn'), segs, soma, MET[m].n, v.querySelectorAll('[data-sg]')); alinharPz(v); if (document.fonts) document.fonts.ready.then(function () { alinharPz(v); }); }
+  if (soma) rosca($('#dn'), segs, soma, MET[m].n, v.querySelectorAll('[data-sg]'));
   ligarOrdenacao(v, 'ex', cols, render);
 }
 
