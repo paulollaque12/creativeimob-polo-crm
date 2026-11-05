@@ -11,7 +11,7 @@
 <body>
 <title>Dashboard Polo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<!-- v2026-10-24l agenciamentos sempre visível, barras centradas -->
+<!-- v2026-11-04b ícone i no funil, resultado do período com mais métricas -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600&display=swap">
@@ -102,6 +102,16 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 .ct{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 16px;margin-bottom:16px}
 .ct h2{margin:0;font:600 12px var(--display);letter-spacing:.12em;text-transform:uppercase}
 .ct .sub{color:var(--ink3);font-size:12.5px}
+/* ícone "i" com explicação no hover/foco (padrão do dashboard da Gralha) */
+.ct h2{position:relative;display:inline-flex;align-items:center;gap:8px}
+.inf{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--ink3);color:var(--ink3);font:600 10px/1 var(--display);font-style:normal;letter-spacing:0;text-transform:none;cursor:help;transition:color .15s,border-color .15s}
+.inf:hover,.inf:focus-visible{color:var(--ink);border-color:var(--ink);outline:none}
+.inft{position:absolute;left:0;top:calc(100% + 10px);z-index:30;width:min(400px,80vw);padding:14px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.35);font:400 12.5px/1.55 var(--body);letter-spacing:0;text-transform:none;color:var(--ink2);opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .15s,transform .15s,visibility .15s;pointer-events:none}
+.inf:hover~.inft,.inf:focus~.inft{opacity:1;visibility:visible;transform:none}
+.inft b{color:var(--ink);font-weight:600}
+.inft ul{margin:8px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.inft li{display:grid;grid-template-columns:104px minmax(0,1fr);gap:10px}
+.inft p{margin:0}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 
 /* ---------- funil ---------- */
@@ -126,6 +136,10 @@ select.ctl{padding-right:28px;appearance:none;background-image:linear-gradient(4
 
 /* ---------- resumo ---------- */
 .res{display:flex;flex-direction:column}
+.kvs{flex:1;display:flex;flex-direction:column}
+.kvs .kv{flex:1;align-items:center;min-height:46px}
+.kvs .kv:last-child{border-bottom:1px solid var(--line);padding-bottom:12px}
+.res .note{margin-top:14px}
 .hero{padding-bottom:16px;border-bottom:1px solid var(--line)}
 .lbl{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
 .big{font:600 38px/1.1 var(--display);letter-spacing:-.02em;margin:6px 0 8px;font-variant-numeric:lining-nums}
@@ -585,6 +599,7 @@ function semanasMes(ano, mes) {
 }
 var fmt = {
   n: function (v) { return Math.round(v).toLocaleString('pt-BR'); },
+  dec: function (v) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
   pct: function (v, dec) { return (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }) + '%'; },
   mi: function (v) { return 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Mi'; },
   brl: function (v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }); },
@@ -799,19 +814,36 @@ function htmlFunil(o, p, prevD1, mostraChg) {
   s += '<div class="fconv" style="height:auto"><span class="fvgv" style="margin-top:4px">VGV <b>' + fmt.mi(o.vgv) + '</b></span></div>';
   return s + '</div>';
 }
+// Explicação do funil (ícone "i")
+var INFO_FUNIL = '<i class="inf" tabindex="0" role="button" aria-label="Como o funil é contado">i</i><span class="inft" role="tooltip">' +
+  '<p>Cada etapa conta <b>clientes únicos</b> no período, pela data do registro no Vista.</p><ul>' +
+  '<li><b>Leads</b><span>clientes captados (entrada do lead)</span></li>' +
+  '<li><b>1º Contato</b><span>card movido para a etapa 1º Contato</span></li>' +
+  '<li><b>Pré-atendimento</b><span>card na etapa Pré-atendimento</span></li>' +
+  '<li><b>Atendimento</b><span>Em Atendimento, inclusive Prioridade</span></li>' +
+  '<li><b>Agendamento</b><span>card na etapa Em Agendamento</span></li>' +
+  '<li><b>Visita</b><span>card na etapa Em Visitação</span></li>' +
+  '<li><b>Proposta</b><span>card na etapa Proposta</span></li>' +
+  '<li><b>Venda</b><span>negócios ganhos; o VGV soma um valor por imóvel vendido</span></li></ul>' +
+  '<p>O <b>↓ %</b> é a conversão em relação à etapa anterior. O selo ao lado compara com os mesmos dias imediatamente antes.</p></span>';
 function rOv(v) {
   var f = F(), o = funil(C, FX.d1, FX.d2, f), pa = anterior(FX.d1, FX.d2), p = funil(C, pa[0], pa[1], f);
-  var conv = o[0] ? o[7] / o[0] : 0, convp = p[0] ? p[7] / p[0] : 0, imov = FX.vei ? '<p class="note">Agenciamentos não têm veículo de captação: com esse filtro ativo eles ficam zerados.</p>' : '';
+  var conv = o[0] ? o[7] / o[0] : 0, convp = p[0] ? p[7] / p[0] : 0, nd = FX.d2 - FX.d1 + 1, lpd = o[0] / nd, lpdp = p[0] / nd;
+  var cvis = o[0] ? o[5] / o[0] : 0, cvisp = p[0] ? p[5] / p[0] : 0, imov = FX.vei ? '<p class="note">Agenciamentos não têm veículo de captação: com esse filtro ativo eles ficam zerados.</p>' : '';
   var gran = granAtual(granDe(FX.d1, FX.d2)), sel = ST.evo;
   v.innerHTML =
     '<div class="grid g-ov">' +
-      '<section class="card"><div class="ct"><h2>Funil de conversão</h2><span class="sub">clientes únicos por etapa · % = conversão da etapa anterior</span></div>' + htmlFunil(o, p, pa[0], true) + '</section>' +
+      '<section class="card"><div class="ct"><h2>Funil de conversão' + INFO_FUNIL + '</h2></div>' + htmlFunil(o, p, pa[0], true) + '</section>' +
       '<section class="card res"><div class="ct"><h2>Resultado do período</h2><span class="sub">' + fmt.data(FX.d1) + ' a ' + fmt.data(FX.d2) + '</span></div>' +
         '<div class="hero"><div class="lbl">VGV</div><div class="big">' + fmt.mi(o.vgv) + '</div>' + chg(o.vgv, p.vgv, pa[0]) + '</div>' +
+        '<div class="kvs">' +
         kv('Vendas', fmt.n(o[7]), chg(o[7], p[7], pa[0])) +
         kv('Ticket médio', o[7] ? fmt.mi(o.ticket) : '–', chg(o.ticket, p.ticket, pa[0])) +
+        kv('Leads por dia', fmt.dec(lpd), chg(lpd, lpdp, pa[0])) +
+        kv('Conversão lead → visita', fmt.pct(cvis, 1), chg(cvis, cvisp, pa[0])) +
         kv('Conversão lead → venda', fmt.pct(conv, 1), chg(conv, convp, pa[0])) +
         kv('Agenciamentos', fmt.n(o[8]), chg(o[8], p[8], pa[0])) +
+        '</div>' +
         '<p class="note">Comparação com os ' + (FX.d2 - FX.d1 + 1) + ' dias anteriores (' + fmt.data(pa[0]) + ' a ' + fmt.data(pa[1]) + ').</p>' + imov +
       '</section>' +
     '</div>' +
